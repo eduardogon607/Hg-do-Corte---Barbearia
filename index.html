@@ -690,6 +690,78 @@
                 height: 60px;
             }
         }
+
+        /* ========= OBSERVAÇÕES (espera e PIX) ========= */
+        .waiting-info {
+            background: rgba(245, 183, 0, 0.1);
+            border-left: 4px solid var(--yellow);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin: 16px 0 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: #ddd;
+        }
+        .waiting-info i {
+            color: var(--yellow);
+            font-size: 1.2rem;
+            margin-top: 2px;
+        }
+        .waiting-info span {
+            line-height: 1.4;
+        }
+        .pix-info {
+            background: rgba(0, 200, 0, 0.1);
+            border-left: 4px solid #00cc00;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin: 16px 0 8px;
+            font-size: 0.85rem;
+            color: #ddd;
+        }
+        .pix-info .pix-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .pix-info .pix-label {
+            font-weight: 600;
+            color: #00cc00;
+            min-width: 51px;
+        }
+        .pix-info .pix-value {
+            font-family: monospace;
+            word-break: break-all;
+            flex: 1;
+        }
+        .copy-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid #00cc00;
+            color: #00cc00;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .copy-btn:active {
+            background: #00cc00;
+            color: black;
+        }
+        .pix-note {
+            margin-top: 12px;
+            font-size: 0.75rem;
+            color: #aaa;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -848,54 +920,68 @@
         </div>
     </footer>
 
-  
-
-<!-- MODAL DE AGENDAMENTO (com observação de espera) -->
-<div id="bookingModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><i class="fas fa-calendar-alt"></i> Agendar Horário</h3>
-            <button class="close-modal" id="closeModalBtn">&times;</button>
-        </div>
-        <div id="modalStep">
-            <div id="stepDate">
-                <div class="input-label"><i class="fas fa-calendar-day"></i> Selecione o dia</div>
-                <div id="datesContainer" class="date-grid"></div>
-                <button id="nextToHours" class="btn" style="width:100%; background:#333; color:white;" disabled>Próximo →</button>
+    <!-- MODAL DE AGENDAMENTO (com observação de espera e PIX) -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-calendar-alt"></i> Agendar Horário</h3>
+                <button class="close-modal" id="closeModalBtn">&times;</button>
             </div>
-            <div id="stepHour" style="display:none;">
-                <div class="input-label"><i class="fas fa-clock"></i> Escolha o horário</div>
-                <div id="hoursContainer" class="hours-grid"></div>
-                <!-- OBSERVAÇÃO ADICIONADA -->
-                <div class="waiting-info">
-                    <i class="fas fa-hourglass-half"></i>
-                    <span>⏱️ Tolerância de espera de 15 a 20 minutos (dependendo do serviço do cliente anterior).<br> O atendimento pode ultrapassar 1 hora.</span>
+            <div id="modalStep">
+                <div id="stepDate">
+                    <div class="input-label"><i class="fas fa-calendar-day"></i> Selecione o dia</div>
+                    <div id="datesContainer" class="date-grid"></div>
+                    <button id="nextToHours" class="btn" style="width:100%; background:#333; color:white;" disabled>Próximo →</button>
                 </div>
-                <!-- FIM DA OBSERVAÇÃO -->
-                <button id="backToDate" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
-                <button id="nextToServiceOrName" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
-            </div>
-            <div id="stepService" style="display:none;">
-                <div class="input-label"><i class="fas fa-cut"></i> Selecione o serviço</div>
-                <div id="servicesContainer" class="services-grid-select"></div>
-                <button id="backToHourFromService" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
-                <button id="nextToNameFromService" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
-            </div>
-            <div id="stepName" style="display:none;">
-                <div class="input-group">
-                    <i class="fas fa-user-astronaut"></i>
-                    <input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo" autocomplete="off">
+                <div id="stepHour" style="display:none;">
+                    <div class="input-label"><i class="fas fa-clock"></i> Escolha o horário</div>
+                    <div id="hoursContainer" class="hours-grid"></div>
+                    <div class="waiting-info">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span>⏱️ Tolerância de espera de 15 a 20 minutos (dependendo do serviço do cliente anterior).<br> O atendimento pode ultrapassar 1 hora.</span>
+                    </div>
+                    <button id="backToDate" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
+                    <button id="nextToServiceOrName" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
                 </div>
-                <div id="nameError" class="error-msg" style="color:#ff8888; margin-bottom:12px;"></div>
-                <button id="backToPrevStep" class="btn-outline btn" style="width:100%;">← Voltar</button>
-                <button id="confirmBooking" class="confirm-btn"><i class="fas fa-check-circle"></i> Confirmar Agendamento</button>
+                <div id="stepService" style="display:none;">
+                    <div class="input-label"><i class="fas fa-cut"></i> Selecione o serviço</div>
+                    <div id="servicesContainer" class="services-grid-select"></div>
+                    <button id="backToHourFromService" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
+                    <button id="nextToNameFromService" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
+                </div>
+                <div id="stepName" style="display:none;">
+                    <div class="input-group">
+                        <i class="fas fa-user-astronaut"></i>
+                        <input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo" autocomplete="off">
+                    </div>
+                    <div id="nameError" class="error-msg" style="color:#ff8888; margin-bottom:12px;"></div>
+                    <!-- OBSERVAÇÃO DO PIX COM DADOS DA CONTA -->
+                    <div class="pix-info">
+                        <div><i class="fas fa-credit-card"></i> <strong>Pagamento via PIX</strong></div>
+                        <div class="pix-row">
+                            <span class="pix-label">Chave:</span>
+                            <span class="pix-value" id="pixKeyValue">Hugokauamiranda11@gmail.com</span>
+                            <button class="copy-btn" id="copyPixKeyBtn"><i class="fas fa-copy"></i> Copiar</button>
+                        </div>
+                        <div class="pix-row">
+                            <span class="pix-label">Banco:</span>
+                            <span class="pix-value">Bradesco</span>
+                        </div>
+                        <div class="pix-row">
+                            <span class="pix-label">Nome:</span>
+                            <span class="pix-value">Hugo Santos</span>
+                        </div>
+                        <div class="pix-note">
+                            💡 O agendamento só será confirmado após o envio do comprovante de pagamento via WhatsApp.
+                        </div>
+                    </div>
+                    <!-- FIM OBSERVAÇÃO PIX -->
+                    <button id="backToPrevStep" class="btn-outline btn" style="width:100%;">← Voltar</button>
+                    <button id="confirmBooking" class="confirm-btn"><i class="fas fa-check-circle"></i> Confirmar Agendamento</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-
-
 
     <!-- MODAIS ADMIN E CARROSSEL -->
     <div id="adminLoginModal" class="modal">
@@ -948,7 +1034,8 @@
             { name: "Selagem", price: 100 },
             { name: "Luzes", price: 100 },
             { name: "Reflexo", price: 100 },
-            { name: "Corte todo na tesoura", price: 30 }
+            { name: "Corte todo na tesoura", price: 30 },
+            { name: "Corte + barba", price: 50 }
         ];
 
         // ========== FOTOS E VÍDEOS (carrossel) ==========
@@ -1304,10 +1391,10 @@
                 resetBooking();
                 return;
             }
-            const msg = `*NOVO AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardamos você!`;
+            const msg = `*NOVO AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardamos você!%0A%0A⚠️ ATENÇÃO: O agendamento será confirmado somente após o envio do comprovante de pagamento via PIX.`;
             closeBookingModal();
             window.open(`https://wa.me/5591984006046?text=${msg}`, '_blank');
-            alert("✅ Agendamento confirmado!");
+            alert("✅ Agendamento solicitado! Envie o comprovante do PIX para confirmar.");
             resetBooking();
         });
 
@@ -1389,6 +1476,19 @@
                 if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
             });
         });
+
+        // Botão copiar chave PIX
+        const copyBtn = document.getElementById('copyPixKeyBtn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const pixKey = document.getElementById('pixKeyValue').innerText;
+                navigator.clipboard.writeText(pixKey).then(() => {
+                    alert("Chave PIX copiada para a área de transferência!");
+                }).catch(() => {
+                    alert("Não foi possível copiar. Copie manualmente.");
+                });
+            });
+        }
     </script>
 </body>
 
