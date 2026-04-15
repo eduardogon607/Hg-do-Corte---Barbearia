@@ -704,14 +704,17 @@
             font-size: 0.85rem;
             color: #ddd;
         }
+
         .waiting-info i {
             color: var(--yellow);
             font-size: 1.2rem;
             margin-top: 2px;
         }
+
         .waiting-info span {
             line-height: 1.4;
         }
+
         .pix-info {
             background: rgba(0, 200, 0, 0.1);
             border-left: 4px solid #00cc00;
@@ -721,6 +724,7 @@
             font-size: 0.85rem;
             color: #ddd;
         }
+
         .pix-info .pix-row {
             display: flex;
             align-items: center;
@@ -729,18 +733,21 @@
             gap: 8px;
             margin-top: 8px;
         }
+
         .pix-info .pix-label {
             font-weight: 600;
             color: #00cc00;
-            min-width: 51px;
+            min-width: 70px;
         }
+
         .pix-info .pix-value {
             font-family: monospace;
             word-break: break-all;
             flex: 1;
         }
+
         .copy-btn {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             border: 1px solid #00cc00;
             color: #00cc00;
             padding: 6px 12px;
@@ -752,10 +759,12 @@
             align-items: center;
             gap: 6px;
         }
+
         .copy-btn:active {
             background: #00cc00;
             color: black;
         }
+
         .pix-note {
             margin-top: 12px;
             font-size: 0.75rem;
@@ -931,28 +940,35 @@
                 <div id="stepDate">
                     <div class="input-label"><i class="fas fa-calendar-day"></i> Selecione o dia</div>
                     <div id="datesContainer" class="date-grid"></div>
-                    <button id="nextToHours" class="btn" style="width:100%; background:#333; color:white;" disabled>Próximo →</button>
+                    <button id="nextToHours" class="btn" style="width:100%; background:#333; color:white;"
+                        disabled>Próximo →</button>
                 </div>
                 <div id="stepHour" style="display:none;">
                     <div class="input-label"><i class="fas fa-clock"></i> Escolha o horário</div>
                     <div id="hoursContainer" class="hours-grid"></div>
                     <div class="waiting-info">
                         <i class="fas fa-hourglass-half"></i>
-                        <span>⏱️ Tolerância de espera de 15 a 20 minutos (dependendo do serviço do cliente anterior).<br> O atendimento pode ultrapassar 1 hora.</span>
+                        <span>⏱️ Tolerância de espera de 15 a 20 minutos (dependendo do serviço do cliente
+                            anterior).<br> O atendimento pode ultrapassar 1 hora.</span>
                     </div>
-                    <button id="backToDate" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
-                    <button id="nextToServiceOrName" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
+                    <button id="backToDate" class="btn-outline btn" style="margin-top:12px; width:100%;">←
+                        Voltar</button>
+                    <button id="nextToServiceOrName" class="btn" style="margin-top:12px; width:100%;"
+                        disabled>Continuar →</button>
                 </div>
                 <div id="stepService" style="display:none;">
                     <div class="input-label"><i class="fas fa-cut"></i> Selecione o serviço</div>
                     <div id="servicesContainer" class="services-grid-select"></div>
-                    <button id="backToHourFromService" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
-                    <button id="nextToNameFromService" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
+                    <button id="backToHourFromService" class="btn-outline btn" style="margin-top:12px; width:100%;">←
+                        Voltar</button>
+                    <button id="nextToNameFromService" class="btn" style="margin-top:12px; width:100%;"
+                        disabled>Continuar →</button>
                 </div>
                 <div id="stepName" style="display:none;">
                     <div class="input-group">
                         <i class="fas fa-user-astronaut"></i>
-                        <input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo" autocomplete="off">
+                        <input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo"
+                            autocomplete="off">
                     </div>
                     <div id="nameError" class="error-msg" style="color:#ff8888; margin-bottom:12px;"></div>
                     <!-- OBSERVAÇÃO DO PIX COM DADOS DA CONTA -->
@@ -960,7 +976,7 @@
                         <div><i class="fas fa-credit-card"></i> <strong>Pagamento via PIX</strong></div>
                         <div class="pix-row">
                             <span class="pix-label">Chave:</span>
-                            <span class="pix-value" id="pixKeyValue">Hugokauamiranda11@gmail.com</span>
+                            <span class="pix-value" id="pixKeyValue">hugokauanmiranda11@gmail.com</span>
                             <button class="copy-btn" id="copyPixKeyBtn"><i class="fas fa-copy"></i> Copiar</button>
                         </div>
                         <div class="pix-row">
@@ -977,7 +993,8 @@
                     </div>
                     <!-- FIM OBSERVAÇÃO PIX -->
                     <button id="backToPrevStep" class="btn-outline btn" style="width:100%;">← Voltar</button>
-                    <button id="confirmBooking" class="confirm-btn"><i class="fas fa-check-circle"></i> Confirmar Agendamento</button>
+                    <button id="confirmBooking" class="confirm-btn"><i class="fas fa-check-circle"></i> Confirmar
+                        Agendamento</button>
                 </div>
             </div>
         </div>
@@ -1216,14 +1233,15 @@
         function escapeHtml(str) { return str.replace(/[&<>]/g, function (m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 
         // Datas e horários - função para obter horários disponíveis conforme o dia da semana
+        // AGORA: das 10h às 20h (excluindo 09h)
         function getAvailableHoursForDate(date) {
             const dayOfWeek = date.getDay(); // 0 = domingo, 1 = segunda, ..., 6 = sábado
-            if (dayOfWeek === 0) { // Domingo
-                return ["09:00", "10:00", "11:00"];
-            } else if (dayOfWeek === 6) { // Sábado
-                return ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
-            } else { // Segunda a Sexta
-                return ["09:00", "10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+            if (dayOfWeek === 0) { // Domingo - até 12h, então 10h e 11h
+                return ["10:00", "11:00"];
+            } else if (dayOfWeek === 6) { // Sábado - 10h às 20h (último às 20h)
+                return ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+            } else { // Segunda a Sexta - 10h-12h e 15h-20h
+                return ["10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
             }
         }
 
