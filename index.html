@@ -189,6 +189,12 @@
             border-bottom: 3px solid var(--yellow);
         }
 
+        .hero p {
+            font-size: 1rem;
+            color: #ccc;
+            margin-bottom: 24px;
+        }
+
         .hero-buttons {
             display: flex;
             flex-direction: column;
@@ -199,6 +205,27 @@
         .hero-buttons .btn {
             width: 90%;
             max-width: 280px;
+        }
+
+        /* Observação de agendamento */
+        .booking-note {
+            background: rgba(245, 183, 0, 0.15);
+            border-left: 4px solid var(--yellow);
+            border-radius: 16px;
+            padding: 12px 20px;
+            margin-top: 24px;
+            display: inline-block;
+            font-size: 0.85rem;
+            color: #ddd;
+            text-align: left;
+            max-width: 90%;
+        }
+        .booking-note i {
+            color: var(--yellow);
+            margin-right: 8px;
+        }
+        .booking-note strong {
+            color: var(--yellow);
         }
 
         /* Services */
@@ -805,6 +832,12 @@
                                 class="fas fa-calendar-check"></i> AGENDAR HORÁRIO</button>
                         <a href="#servicos" class="btn btn-outline"><i class="fas fa-cut"></i> SERVIÇOS</a>
                     </div>
+                    <!-- OBSERVAÇÃO SOBRE AGENDAMENTOS -->
+                    <div class="booking-note">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>📅 Agendamentos online apenas de SEGUNDA a SEXTA-FEIRA.</strong><br>
+                        Aos sábados e domingos a barbearia funciona normalmente nos horários estabelecidos, mas não oferecemos reserva de horário via site.
+                    </div>
                 </div>
             </div>
         </section>
@@ -912,7 +945,7 @@
                     </div>
                     <div class="contact-hours">
                         <h3><i class="far fa-clock"></i> Funcionamento</h3>
-                        <div class="hours-row"><span>Seg - Sex</span><span>09h - 12h / 15h - 20h</span></div>
+                        <div class="hours-row"><span>Segunda - Sexta</span><span>09h - 12h / 15h - 20h</span></div>
                         <div class="hours-row"><span>Sábado</span><span>09h - 20h</span></div>
                         <div class="hours-row"><span>Domingo</span><span>09h - 12h</span></div>
                         <button class="btn open-modal-btn" data-preselect-service="false"
@@ -1233,26 +1266,34 @@
         function escapeHtml(str) { return str.replace(/[&<>]/g, function (m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
 
         // Datas e horários - função para obter horários disponíveis conforme o dia da semana
-        // AGORA: das 10h às 20h (excluindo 09h)
+        // AGORA: apenas dias úteis (segunda a sexta), das 10h às 20h (exceto 09h)
         function getAvailableHoursForDate(date) {
             const dayOfWeek = date.getDay(); // 0 = domingo, 1 = segunda, ..., 6 = sábado
-            if (dayOfWeek === 0) { // Domingo - até 12h, então 10h e 11h
-                return ["10:00", "11:00"];
-            } else if (dayOfWeek === 6) { // Sábado - 10h às 20h (último às 20h)
-                return ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
-            } else { // Segunda a Sexta - 10h-12h e 15h-20h
+            // Segunda a Sexta - 10h-12h e 15h-20h
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
                 return ["10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+            }
+            // Sábado e domingo: nenhum horário disponível
+            return [];
+        }
+
+        // Gerar apenas dias de segunda a sexta (próximos 14 dias para ter sempre opções)
+        const today = new Date(), weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        let availableDates = [];
+        let daysAdded = 0;
+        let currentDate = new Date();
+        while (daysAdded < 10) { // Garantir pelo menos 10 dias úteis
+            currentDate.setDate(today.getDate() + daysAdded + 1);
+            const dayOfWeek = currentDate.getDay();
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Segunda a Sexta
+                let dayStr = `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                availableDates.push({ fullDate: new Date(currentDate), display: `${weekDays[currentDate.getDay()]}, ${dayStr}`, value: `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}` });
+                daysAdded++;
+            } else {
+                daysAdded++; // Pula fim de semana mas continua contando para avançar
             }
         }
 
-        const today = new Date(), weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-        let availableDates = [];
-        for (let i = 1; i <= 7; i++) {
-            let d = new Date();
-            d.setDate(today.getDate() + i);
-            let dayStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-            availableDates.push({ fullDate: d, display: `${weekDays[d.getDay()]}, ${dayStr}`, value: `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}` });
-        }
         let selectedDate = null, selectedHour = null, selectedService = null, preSelectedService = null;
 
         function renderDates() {
@@ -1276,6 +1317,16 @@
             const cont = document.getElementById('hoursContainer');
             cont.innerHTML = '';
             const availableHours = getAvailableHoursForDate(date.fullDate);
+            if (availableHours.length === 0) {
+                const msg = document.createElement('div');
+                msg.textContent = "Nenhum horário disponível para este dia.";
+                msg.style.textAlign = "center";
+                msg.style.padding = "20px";
+                msg.style.color = "#ff8888";
+                cont.appendChild(msg);
+                document.getElementById('nextToServiceOrName').disabled = true;
+                return;
+            }
             availableHours.forEach(hour => {
                 const blocked = isSlotBlocked(date, hour);
                 const btn = document.createElement('div');
