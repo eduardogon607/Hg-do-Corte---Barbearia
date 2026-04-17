@@ -15,7 +15,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
-        /* (mesmo CSS do seu código anterior, mantido integralmente) */
+        /* (mesmo CSS original, mantido integralmente) */
         * {
             margin: 0;
             padding: 0;
@@ -964,7 +964,7 @@
         </div>
     </footer>
 
-    <!-- MODAIS (agendamento, login admin, lista admin, carrossel) -->
+    <!-- MODAIS -->
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1075,550 +1075,574 @@
 
     <script>
         // ========== CONFIGURAÇÃO DO FIREBASE ==========
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5yqyJE2EkVyepT0S61ViuA3RPpGESBV4",
+            authDomain: "hg-barbearia.firebaseapp.com",
+            databaseURL: "https://hg-barbearia-default-rtdb.firebaseio.com",
+            projectId: "hg-barbearia",
+            storageBucket: "hg-barbearia.firebasestorage.app",
+            messagingSenderId: "845108565731",
+            appId: "1:845108565731:web:9256878c18d5b7b69597d6",
+            measurementId: "G-EDZQ3YP0PS"
+        };
 
-/// ========== CONFIGURAÇÃO DO FIREBASE (USANDO CDN) ==========
-const firebaseConfig = {
-    apiKey: "AIzaSyC5yqyJE2EkVyepT0S61ViuA3RPpGESBV4",
-    authDomain: "hg-barbearia.firebaseapp.com",
-    databaseURL: "https://hg-barbearia-default-rtdb.firebaseio.com", // ← IMPORTANTE: adicione a URL do Realtime Database
-    projectId: "hg-barbearia",
-    storageBucket: "hg-barbearia.firebasestorage.app",
-    messagingSenderId: "845108565731",
-    appId: "1:845108565731:web:9256878c18d5b7b69597d6",
-    measurementId: "G-EDZQ3YP0PS"
-};
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const appointmentsRef = database.ref("appointments");
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const appointmentsRef = database.ref("appointments");
+        // ========== LISTA DE SERVIÇOS ==========
+        const serviceList = [
+            { name: "Barba", price: 20 },
+            { name: "Degrade", price: 30 },
+            { name: "Social", price: 20 },
+            { name: "Corte + pigmentação", price: 55 },
+            { name: "Nevou", price: 110 },
+            { name: "Selagem", price: 100 },
+            { name: "Luzes", price: 100 },
+            { name: "Reflexo", price: 100 },
+            { name: "Corte todo na tesoura", price: 30 },
+            { name: "Corte + barba", price: 50 }
+        ];
 
-// ========== LISTA DE SERVIÇOS ==========
-const serviceList = [
-    { name: "Barba", price: 20 },
-    { name: "Degrade", price: 30 },
-    { name: "Social", price: 20 },
-    { name: "Corte + pigmentação", price: 55 },
-    { name: "Nevou", price: 110 },
-    { name: "Selagem", price: 100 },
-    { name: "Luzes", price: 100 },
-    { name: "Reflexo", price: 100 },
-    { name: "Corte todo na tesoura", price: 30 },
-    { name: "Corte + barba", price: 50 }
-];
+        // ========== FOTOS E VÍDEOS (carrossel) ==========
+        const categoryPhotos = {
+            degrade: [
+                { src: "WhatsApp Image 2026-04-10 at 11.34.17.jpeg", title: "Corte + Pigmentação - R$55,00" },
+                { src: "WhatsApp Image 2026-04-10 at 11.34.17 (1).jpeg", title: "Degradê - R$30,00" },
+                { src: "WhatsApp Image 2026-04-10 at 11.34.18.jpeg", title: "Corte + Pigmentação - R$55,00" }
+            ],
+            barba: [
+                { src: "WhatsApp Image 2026-04-13 at 09.40.31.jpeg", title: "Barba Taperfade - R$20,00" },
+                { src: "WhatsApp Image 2026-04-13 at 09.51.35.jpeg", title: "Barba Taperfade - R$20,00" },
+                { src: "WhatsApp Video 2026-04-13 at 09.51.29.mp4", title: "Barba Taperfade - R$20,00" }
+            ],
+            moderno: [
+                { src: "WhatsApp Image 2026-04-10 at 11.34.15.jpeg", title: "Americano - R$30,00" },
+                { src: "WhatsApp Image 2026-04-10 at 11.34.16 (1).jpeg", title: "Jit Fade - R$30,00" },
+                { src: "WhatsApp Image 2026-04-10 at 11.34.14.jpeg", title: "Americano - R$30,00" }
+            ],
+            exclusivo: [
+                { src: "WhatsApp Image 2026-04-10 at 11.34.11.jpeg", title: "Luzes - R$100,00" },
+                { src: "WhatsApp Image 2026-04-10 at 11.34.12.jpeg", title: "Reflexo - R$100,00" },
+                { src: "WhatsApp Image 2026-04-10 at 11.34.16.jpeg", title: "Nevou - R$110,00" }
+            ]
+        };
 
-// ========== FOTOS E VÍDEOS (carrossel) ==========
-const categoryPhotos = {
-    degrade: [
-        { src: "WhatsApp Image 2026-04-10 at 11.34.17.jpeg", title: "Corte + Pigmentação - R$55,00" },
-        { src: "WhatsApp Image 2026-04-10 at 11.34.17 (1).jpeg", title: "Degradê - R$30,00" },
-        { src: "WhatsApp Image 2026-04-10 at 11.34.18.jpeg", title: "Corte + Pigmentação - R$55,00" }
-    ],
-    barba: [
-        { src: "WhatsApp Image 2026-04-13 at 09.40.31.jpeg", title: "Barba Taperfade - R$20,00" },
-        { src: "WhatsApp Image 2026-04-13 at 09.51.35.jpeg", title: "Barba Taperfade - R$20,00" },
-        { src: "WhatsApp Video 2026-04-13 at 09.51.29.mp4", title: "Barba Taperfade - R$20,00" }
-    ],
-    moderno: [
-        { src: "WhatsApp Image 2026-04-10 at 11.34.15.jpeg", title: "Americano - R$30,00" },
-        { src: "WhatsApp Image 2026-04-10 at 11.34.16 (1).jpeg", title: "Jit Fade - R$30,00" },
-        { src: "WhatsApp Image 2026-04-10 at 11.34.14.jpeg", title: "Americano - R$30,00" }
-    ],
-    exclusivo: [
-        { src: "WhatsApp Image 2026-04-10 at 11.34.11.jpeg", title: "Luzes - R$100,00" },
-        { src: "WhatsApp Image 2026-04-10 at 11.34.12.jpeg", title: "Reflexo - R$100,00" },
-        { src: "WhatsApp Image 2026-04-10 at 11.34.16.jpeg", title: "Nevou - R$110,00" }
-    ]
-};
+        // ========== CARROSSEL ==========
+        let currentCarouselPhotos = [];
+        let currentPhotoIndex = 0;
+        const carouselModalEl = document.getElementById('carouselModal');
+        const carouselMedia = document.getElementById('carouselMedia');
+        const carouselCaption = document.getElementById('carouselCaption');
+        const carouselDots = document.getElementById('carouselDots');
 
-// ========== CARROSSEL (código mantido) ==========
-let currentCarouselPhotos = [];
-let currentPhotoIndex = 0;
-const carouselModalEl = document.getElementById('carouselModal');
-const carouselMedia = document.getElementById('carouselMedia');
-const carouselCaption = document.getElementById('carouselCaption');
-const carouselDots = document.getElementById('carouselDots');
+        function isVideoFile(src) {
+            return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(src);
+        }
 
-function isVideoFile(src) {
-    return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(src);
-}
-
-function updateCarousel() {
-    if (!currentCarouselPhotos.length) return;
-    const media = currentCarouselPhotos[currentPhotoIndex];
-    const src = media.src;
-    const title = media.title;
-    carouselMedia.innerHTML = '';
-    if (isVideoFile(src)) {
-        const video = document.createElement('video');
-        video.src = src;
-        video.controls = true;
-        video.autoplay = false;
-        video.loop = true;
-        video.playsInline = true;
-        video.muted = false;
-        video.style.maxWidth = '100%';
-        video.style.maxHeight = '70vh';
-        video.style.borderRadius = '24px';
-        video.style.outline = 'none';
-        carouselMedia.appendChild(video);
-    } else {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = title;
-        img.style.maxWidth = '100%';
-        img.style.maxHeight = '70vh';
-        img.style.borderRadius = '24px';
-        img.style.objectFit = 'contain';
-        carouselMedia.appendChild(img);
-    }
-    carouselCaption.textContent = title;
-    const dots = document.querySelectorAll('#carouselDots .dot');
-    dots.forEach((dot, idx) => {
-        if (idx === currentPhotoIndex) dot.classList.add('active');
-        else dot.classList.remove('active');
-    });
-}
-
-function buildDots() {
-    carouselDots.innerHTML = '';
-    currentCarouselPhotos.forEach((_, idx) => {
-        const dot = document.createElement('div');
-        dot.classList.add('dot');
-        if (idx === currentPhotoIndex) dot.classList.add('active');
-        dot.addEventListener('click', () => {
-            currentPhotoIndex = idx;
-            updateCarousel();
-        });
-        carouselDots.appendChild(dot);
-    });
-}
-
-function openCarousel(categoryKey) {
-    const photos = categoryPhotos[categoryKey];
-    if (!photos || photos.length === 0) {
-        alert("Nenhuma mídia disponível para esta categoria.");
-        return;
-    }
-    currentCarouselPhotos = photos;
-    currentPhotoIndex = 0;
-    buildDots();
-    updateCarousel();
-    carouselModalEl.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeCarousel() {
-    carouselModalEl.classList.remove('active');
-    document.body.style.overflow = '';
-    const video = carouselMedia.querySelector('video');
-    if (video) video.pause();
-}
-
-document.getElementById('closeCarouselBtn').addEventListener('click', closeCarousel);
-document.getElementById('carouselPrev').addEventListener('click', () => {
-    if (!currentCarouselPhotos.length) return;
-    currentPhotoIndex = (currentPhotoIndex - 1 + currentCarouselPhotos.length) % currentCarouselPhotos.length;
-    updateCarousel();
-});
-document.getElementById('carouselNext').addEventListener('click', () => {
-    if (!currentCarouselPhotos.length) return;
-    currentPhotoIndex = (currentPhotoIndex + 1) % currentCarouselPhotos.length;
-    updateCarousel();
-});
-carouselModalEl.addEventListener('click', (e) => {
-    if (e.target === carouselModalEl) closeCarousel();
-});
-let touchStartX = 0;
-carouselModalEl.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
-carouselModalEl.addEventListener('touchend', (e) => {
-    const endX = e.changedTouches[0].screenX;
-    if (endX < touchStartX - 50) document.getElementById('carouselNext').click();
-    if (endX > touchStartX + 50) document.getElementById('carouselPrev').click();
-});
-document.querySelectorAll('.gallery-item').forEach(item => {
-    item.addEventListener('click', () => {
-        const cat = item.dataset.category;
-        if (cat && categoryPhotos[cat]) openCarousel(cat);
-        else alert("Nenhuma mídia disponível.");
-    });
-});
-
-// ========== FUNÇÕES DE AGENDAMENTO (FIREBASE) ==========
-async function addAppointmentToFirebase(dateObj, hour, serviceName, servicePrice, clientName) {
-    const year = dateObj.fullDate.getFullYear();
-    const month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = dateObj.fullDate.getDate().toString().padStart(2, '0');
-    const dateKey = `${year}-${month}-${day}`;
-    const dateDisplay = dateObj.display;
-    const id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
-    const newApp = {
-        id,
-        dateKey,
-        hour,
-        dateDisplay,
-        serviceName,
-        servicePrice,
-        clientName,
-        timestamp: Date.now()
-    };
-    const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
-    let exists = false;
-    snapshot.forEach(child => {
-        if (child.val().hour === hour) exists = true;
-    });
-    if (exists) return false;
-    await appointmentsRef.child(id).set(newApp);
-    return true;
-}
-
-async function deleteAppointmentFromFirebase(id) {
-    await appointmentsRef.child(id).remove();
-}
-
-async function deleteAllAppointmentsFromFirebase() {
-    await appointmentsRef.remove();
-}
-
-async function isSlotBlockedFirebase(dateObj, hour) {
-    const year = dateObj.fullDate.getFullYear();
-    const month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0');
-    const day = dateObj.fullDate.getDate().toString().padStart(2, '0');
-    const dateKey = `${year}-${month}-${day}`;
-    const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
-    let blocked = false;
-    snapshot.forEach(child => {
-        if (child.val().hour === hour) blocked = true;
-    });
-    return blocked;
-}
-
-async function renderAppointmentsList() {
-    const container = document.getElementById('appointmentsList');
-    const snapshot = await appointmentsRef.once("value");
-    const apps = [];
-    snapshot.forEach(child => {
-        apps.push(child.val());
-    });
-    if (apps.length === 0) {
-        container.innerHTML = '<div class="empty-list">Nenhum agendamento.</div>';
-        return;
-    }
-    apps.sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
-    container.innerHTML = '';
-    apps.forEach(app => {
-        const div = document.createElement('div');
-        div.className = 'appointment-item';
-        div.innerHTML = `<div><strong>${escapeHtml(app.clientName)}</strong><br>📅 ${app.dateDisplay} ⏰ ${app.hour}<br>✂️ ${app.serviceName} - R$ ${app.servicePrice}</div><button class="delete-appointment" data-id="${app.id}">Excluir</button>`;
-        container.appendChild(div);
-    });
-    document.querySelectorAll('.delete-appointment').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const id = btn.getAttribute('data-id');
-            if (confirm("Excluir?")) {
-                await deleteAppointmentFromFirebase(id);
-                renderAppointmentsList();
-                if (bookingModal.classList.contains('active') && stepHourDiv.style.display === 'block' && selectedDate) {
-                    renderHoursWithBlocked(selectedDate);
-                }
+        function updateCarousel() {
+            if (!currentCarouselPhotos.length) return;
+            const media = currentCarouselPhotos[currentPhotoIndex];
+            const src = media.src;
+            const title = media.title;
+            carouselMedia.innerHTML = '';
+            if (isVideoFile(src)) {
+                const video = document.createElement('video');
+                video.src = src;
+                video.controls = true;
+                video.autoplay = false;
+                video.loop = true;
+                video.playsInline = true;
+                video.muted = false;
+                video.style.maxWidth = '100%';
+                video.style.maxHeight = '70vh';
+                video.style.borderRadius = '24px';
+                video.style.outline = 'none';
+                carouselMedia.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = title;
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '70vh';
+                img.style.borderRadius = '24px';
+                img.style.objectFit = 'contain';
+                carouselMedia.appendChild(img);
             }
-        });
-    });
-}
-
-function escapeHtml(str) {
-    return str.replace(/[&<>]/g, function (m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
-}
-
-// ========== HORÁRIOS E DATAS ==========
-function getAvailableHoursForDate(date) {
-    const dayOfWeek = date.getDay();
-    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        return ["10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
-    }
-    return [];
-}
-
-const today = new Date(), weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-let availableDates = [];
-let daysAdded = 0;
-let currentDate = new Date();
-while (daysAdded < 10) {
-    currentDate.setDate(today.getDate() + daysAdded + 1);
-    const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        let dayStr = `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}`;
-        availableDates.push({ fullDate: new Date(currentDate), display: `${weekDays[currentDate.getDay()]}, ${dayStr}`, value: `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}` });
-        daysAdded++;
-    } else {
-        daysAdded++;
-    }
-}
-
-let selectedDate = null, selectedHour = null, selectedService = null, preSelectedService = null;
-
-function renderDates() {
-    const cont = document.getElementById('datesContainer');
-    cont.innerHTML = '';
-    availableDates.forEach(date => {
-        const btn = document.createElement('div');
-        btn.classList.add('date-btn');
-        btn.textContent = date.display;
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedDate = date;
-            document.getElementById('nextToHours').disabled = false;
-        });
-        cont.appendChild(btn);
-    });
-}
-
-async function renderHoursWithBlocked(date) {
-    const cont = document.getElementById('hoursContainer');
-    cont.innerHTML = '';
-    const availableHours = getAvailableHoursForDate(date.fullDate);
-    if (availableHours.length === 0) {
-        const msg = document.createElement('div');
-        msg.textContent = "Nenhum horário disponível para este dia.";
-        msg.style.textAlign = "center";
-        msg.style.padding = "20px";
-        msg.style.color = "#ff8888";
-        cont.appendChild(msg);
-        document.getElementById('nextToServiceOrName').disabled = true;
-        return;
-    }
-    for (const hour of availableHours) {
-        const blocked = await isSlotBlockedFirebase(date, hour);
-        const btn = document.createElement('div');
-        btn.classList.add('hour-btn');
-        if (blocked) {
-            btn.classList.add('blocked');
-            btn.textContent = `${hour} ❌`;
-            btn.style.cursor = 'not-allowed';
-        } else {
-            btn.textContent = hour;
-            btn.addEventListener('click', () => {
-                if (btn.classList.contains('blocked')) return;
-                document.querySelectorAll('.hour-btn').forEach(el => el.classList.remove('selected'));
-                btn.classList.add('selected');
-                selectedHour = hour;
-                document.getElementById('nextToServiceOrName').disabled = false;
+            carouselCaption.textContent = title;
+            const dots = document.querySelectorAll('#carouselDots .dot');
+            dots.forEach((dot, idx) => {
+                if (idx === currentPhotoIndex) dot.classList.add('active');
+                else dot.classList.remove('active');
             });
         }
-        cont.appendChild(btn);
-    }
-}
 
-function renderServices() {
-    const cont = document.getElementById('servicesContainer');
-    cont.innerHTML = '';
-    serviceList.forEach(service => {
-        const btn = document.createElement('div');
-        btn.classList.add('service-btn');
-        btn.textContent = `${service.name} - R$ ${service.price}`;
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.service-btn').forEach(el => el.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedService = service;
-            document.getElementById('nextToNameFromService').disabled = false;
-        });
-        cont.appendChild(btn);
-    });
-}
-
-const stepDateDiv = document.getElementById('stepDate'), stepHourDiv = document.getElementById('stepHour'), stepServiceDiv = document.getElementById('stepService'), stepNameDiv = document.getElementById('stepName');
-const nextToHoursBtn = document.getElementById('nextToHours'), nextToServiceOrNameBtn = document.getElementById('nextToServiceOrName');
-const backToDateBtn = document.getElementById('backToDate'), backToHourFromService = document.getElementById('backToHourFromService'), backToPrevStepBtn = document.getElementById('backToPrevStep');
-const nextToNameFromService = document.getElementById('nextToNameFromService');
-const confirmBtn = document.getElementById('confirmBooking'), clientNameInput = document.getElementById('clientName'), nameErrorDiv = document.getElementById('nameError');
-let flowHasServiceSelection = true;
-
-function showStep(step) {
-    stepDateDiv.style.display = 'none';
-    stepHourDiv.style.display = 'none';
-    stepServiceDiv.style.display = 'none';
-    stepNameDiv.style.display = 'none';
-    if (step === 'date') stepDateDiv.style.display = 'block';
-    if (step === 'hour') stepHourDiv.style.display = 'block';
-    if (step === 'service') stepServiceDiv.style.display = 'block';
-    if (step === 'name') stepNameDiv.style.display = 'block';
-}
-
-function resetBooking() {
-    selectedDate = null;
-    selectedHour = null;
-    selectedService = null;
-    preSelectedService = null;
-    document.getElementById('nextToHours').disabled = true;
-    document.getElementById('nextToServiceOrName').disabled = true;
-    if (nextToNameFromService) nextToNameFromService.disabled = true;
-    showStep('date');
-    document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected'));
-}
-
-nextToHoursBtn.addEventListener('click', async () => {
-    if (selectedDate) {
-        await renderHoursWithBlocked(selectedDate);
-        showStep('hour');
-        selectedHour = null;
-        document.getElementById('nextToServiceOrName').disabled = true;
-    }
-});
-backToDateBtn.addEventListener('click', () => showStep('date'));
-nextToServiceOrNameBtn.addEventListener('click', async () => {
-    if (selectedHour && !(await isSlotBlockedFirebase(selectedDate, selectedHour))) {
-        if (flowHasServiceSelection && !preSelectedService) {
-            renderServices();
-            showStep('service');
-            selectedService = null;
-            if (nextToNameFromService) nextToNameFromService.disabled = true;
-        } else {
-            if (preSelectedService) selectedService = preSelectedService;
-            showStep('name');
-            clientNameInput.value = '';
-            nameErrorDiv.innerText = '';
+        function buildDots() {
+            carouselDots.innerHTML = '';
+            currentCarouselPhotos.forEach((_, idx) => {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if (idx === currentPhotoIndex) dot.classList.add('active');
+                dot.addEventListener('click', () => {
+                    currentPhotoIndex = idx;
+                    updateCarousel();
+                });
+                carouselDots.appendChild(dot);
+            });
         }
-    } else if (selectedHour && (await isSlotBlockedFirebase(selectedDate, selectedHour))) {
-        alert("Horário não disponível.");
-        await renderHoursWithBlocked(selectedDate);
-        selectedHour = null;
-        document.getElementById('nextToServiceOrName').disabled = true;
-    }
-});
-if (backToHourFromService) backToHourFromService.addEventListener('click', () => showStep('hour'));
-if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => {
-    if (selectedService) {
-        showStep('name');
-        clientNameInput.value = '';
-        nameErrorDiv.innerText = '';
-    }
-});
-backToPrevStepBtn.addEventListener('click', () => {
-    if (flowHasServiceSelection && !preSelectedService) showStep('service');
-    else showStep('hour');
-});
-confirmBtn.addEventListener('click', async () => {
-    const nome = clientNameInput.value.trim();
-    if (nome === "") {
-        nameErrorDiv.innerText = "Digite seu nome completo.";
-        return;
-    }
-    if (nome.length < 3) {
-        nameErrorDiv.innerText = "Nome muito curto.";
-        return;
-    }
-    if (await isSlotBlockedFirebase(selectedDate, selectedHour)) {
-        alert("Horário não disponível.");
-        closeBookingModal();
-        resetBooking();
-        return;
-    }
-    const success = await addAppointmentToFirebase(selectedDate, selectedHour, selectedService.name, selectedService.price, nome);
-    if (!success) {
-        alert("Horário já ocupado.");
-        closeBookingModal();
-        resetBooking();
-        return;
-    }
-    const msg = `*NOVO AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardamos você!%0A%0A⚠️ ATENÇÃO: O agendamento será confirmado somente após o envio do comprovante de pagamento via PIX.`;
-    closeBookingModal();
-    window.open(`https://wa.me/5591984006046?text=${msg}`, '_blank');
-    alert("✅ Agendamento solicitado! Envie o comprovante do PIX para confirmar.");
-    resetBooking();
-});
 
-const bookingModal = document.getElementById('bookingModal'), closeModalBtn = document.getElementById('closeModalBtn');
-function openBookingModal(preselect = false, serviceName = null, servicePrice = null) {
-    resetBooking();
-    flowHasServiceSelection = !preselect;
-    if (preselect && serviceName && servicePrice) {
-        preSelectedService = { name: serviceName, price: servicePrice };
-        selectedService = preSelectedService;
-    } else {
-        preSelectedService = null;
-        selectedService = null;
-    }
-    renderDates();
-    showStep('date');
-    bookingModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-function closeBookingModal() {
-    bookingModal.classList.remove('active');
-    document.body.style.overflow = '';
-}
-document.querySelectorAll('.open-modal-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const preselect = btn.getAttribute('data-preselect-service') === 'true';
-        const sName = btn.getAttribute('data-service-name');
-        const sPrice = btn.getAttribute('data-service-price');
-        if (preselect && sName && sPrice) openBookingModal(true, sName, parseInt(sPrice));
-        else openBookingModal(false);
-    });
-});
-closeModalBtn.addEventListener('click', closeBookingModal);
-bookingModal.addEventListener('click', (e) => { if (e.target === bookingModal) closeBookingModal(); });
+        function openCarousel(categoryKey) {
+            const photos = categoryPhotos[categoryKey];
+            if (!photos || photos.length === 0) {
+                alert("Nenhuma mídia disponível para esta categoria.");
+                return;
+            }
+            currentCarouselPhotos = photos;
+            currentPhotoIndex = 0;
+            buildDots();
+            updateCarousel();
+            carouselModalEl.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-// Admin
-const adminLoginModal = document.getElementById('adminLoginModal'), adminListModal = document.getElementById('adminListModal'), adminLink = document.getElementById('adminLink');
-const closeAdminLoginBtn = document.getElementById('closeAdminLoginBtn'), closeAdminListBtn = document.getElementById('closeAdminListBtn'), doLoginBtn = document.getElementById('doLoginBtn'), refreshBtn = document.getElementById('refreshAppointmentsBtn');
-function openAdminLogin() { adminLoginModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
-function closeAdminLogin() { adminLoginModal.classList.remove('active'); document.body.style.overflow = ''; document.getElementById('loginError').innerText = ''; }
-function openAdminList() { renderAppointmentsList(); adminListModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
-function closeAdminList() { adminListModal.classList.remove('active'); document.body.style.overflow = ''; }
-adminLink.addEventListener('click', (e) => { e.preventDefault(); openAdminLogin(); });
-closeAdminLoginBtn.addEventListener('click', closeAdminLogin); closeAdminListBtn.addEventListener('click', closeAdminList); refreshBtn.addEventListener('click', () => renderAppointmentsList());
-doLoginBtn.addEventListener('click', () => { const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value; if (u === 'Hgbarbeiro' && p === 'Hgdocorte') { closeAdminLogin(); openAdminList(); document.getElementById('adminUser').value = ''; document.getElementById('adminPass').value = ''; } else { document.getElementById('loginError').innerText = 'Usuário ou senha inválidos.'; } });
+        function closeCarousel() {
+            carouselModalEl.classList.remove('active');
+            document.body.style.overflow = '';
+            const video = carouselMedia.querySelector('video');
+            if (video) video.pause();
+        }
 
-// Botão "Limpar todos" (caso exista no HTML, mas não há; ignorar erro)
-// Removemos a linha que causava erro: document.getElementById('clearAllBookingsBtn')?.addEventListener(...)
+        document.getElementById('closeCarouselBtn').addEventListener('click', closeCarousel);
+        document.getElementById('carouselPrev').addEventListener('click', () => {
+            if (!currentCarouselPhotos.length) return;
+            currentPhotoIndex = (currentPhotoIndex - 1 + currentCarouselPhotos.length) % currentCarouselPhotos.length;
+            updateCarousel();
+        });
+        document.getElementById('carouselNext').addEventListener('click', () => {
+            if (!currentCarouselPhotos.length) return;
+            currentPhotoIndex = (currentPhotoIndex + 1) % currentCarouselPhotos.length;
+            updateCarousel();
+        });
+        carouselModalEl.addEventListener('click', (e) => {
+            if (e.target === carouselModalEl) closeCarousel();
+        });
+        let touchStartX = 0;
+        carouselModalEl.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        carouselModalEl.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].screenX;
+            if (endX < touchStartX - 50) document.getElementById('carouselNext').click();
+            if (endX > touchStartX + 50) document.getElementById('carouselPrev').click();
+        });
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const cat = item.dataset.category;
+                if (cat && categoryPhotos[cat]) openCarousel(cat);
+                else alert("Nenhuma mídia disponível.");
+            });
+        });
 
-// Menu Hambúrguer
-const menuToggle = document.getElementById('menuToggle');
-const navLinksMenu = document.getElementById('navLinks');
-const overlayMenu = document.getElementById('overlay');
-function closeNav() {
-    navLinksMenu.classList.remove('active');
-    overlayMenu.classList.remove('active');
-    document.body.style.overflow = '';
-}
-function openNav() {
-    navLinksMenu.classList.add('active');
-    overlayMenu.classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-if (menuToggle && navLinksMenu && overlayMenu) {
-    menuToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (navLinksMenu.classList.contains('active')) closeNav();
-        else openNav();
-    });
-    overlayMenu.addEventListener('click', closeNav);
-    document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', closeNav));
-}
-document.querySelectorAll('a[href^="#"]:not(#adminLink)').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        const t = document.querySelector(this.getAttribute('href'));
-        if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
-    });
-});
+        // ========== FUNÇÕES DE AGENDAMENTO (FIREBASE) ==========
+        async function addAppointmentToFirebase(dateObj, hour, serviceName, servicePrice, clientName) {
+            const year = dateObj.fullDate.getFullYear();
+            const month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = dateObj.fullDate.getDate().toString().padStart(2, '0');
+            const dateKey = `${year}-${month}-${day}`;
+            const dateDisplay = dateObj.display;
+            const id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            const newApp = {
+                id,
+                dateKey,
+                hour,
+                dateDisplay,
+                serviceName,
+                servicePrice,
+                clientName,
+                timestamp: Date.now()
+            };
+            const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
+            let exists = false;
+            snapshot.forEach(child => {
+                if (child.val().hour === hour) exists = true;
+            });
+            if (exists) return false;
+            await appointmentsRef.child(id).set(newApp);
+            return true;
+        }
 
-// Botão copiar chave PIX
-const copyBtn = document.getElementById('copyPixKeyBtn');
-if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-        const pixKey = document.getElementById('pixKeyValue').innerText;
-        navigator.clipboard.writeText(pixKey).then(() => {
-            alert("Chave PIX copiada para a área de transferência!");
-        }).catch(() => alert("Não foi possível copiar. Copie manualmente."));
-    });
-}
+        async function deleteAppointmentFromFirebase(id) {
+            await appointmentsRef.child(id).remove();
+        }
+
+        async function deleteAllAppointmentsFromFirebase() {
+            await appointmentsRef.remove();
+        }
+
+        async function isSlotBlockedFirebase(dateObj, hour) {
+            const year = dateObj.fullDate.getFullYear();
+            const month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0');
+            const day = dateObj.fullDate.getDate().toString().padStart(2, '0');
+            const dateKey = `${year}-${month}-${day}`;
+            const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
+            let blocked = false;
+            snapshot.forEach(child => {
+                if (child.val().hour === hour) blocked = true;
+            });
+            return blocked;
+        }
+
+        async function renderAppointmentsList() {
+            const container = document.getElementById('appointmentsList');
+            const snapshot = await appointmentsRef.once("value");
+            const apps = [];
+            snapshot.forEach(child => {
+                apps.push(child.val());
+            });
+            if (apps.length === 0) {
+                container.innerHTML = '<div class="empty-list">Nenhum agendamento.</div>';
+                return;
+            }
+            apps.sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
+            container.innerHTML = '';
+            apps.forEach(app => {
+                const div = document.createElement('div');
+                div.className = 'appointment-item';
+                div.innerHTML = `<div><strong>${escapeHtml(app.clientName)}</strong><br>📅 ${app.dateDisplay} ⏰ ${app.hour}<br>✂️ ${app.serviceName} - R$ ${app.servicePrice}</div><button class="delete-appointment" data-id="${app.id}">Excluir</button>`;
+                container.appendChild(div);
+            });
+            document.querySelectorAll('.delete-appointment').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm("Excluir?")) {
+                        await deleteAppointmentFromFirebase(id);
+                        renderAppointmentsList();
+                        if (bookingModal.classList.contains('active') && stepHourDiv.style.display === 'block' && selectedDate) {
+                            renderHoursWithBlocked(selectedDate);
+                        }
+                    }
+                });
+            });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function (m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        // ========== HORÁRIOS E DATAS (AGORA COM O DIA ATUAL) ==========
+        function getAvailableHoursForDate(date) {
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                return ["10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
+            }
+            return [];
+        }
+
+        const today = new Date();
+        const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        let availableDates = [];
+        let daysAdded = 0;
+        let offset = 0; // começa do dia atual
+        while (daysAdded < 10) {
+            let candidateDate = new Date();
+            candidateDate.setDate(today.getDate() + offset);
+            const dayOfWeek = candidateDate.getDay();
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Segunda a Sexta
+                let dayStr = `${candidateDate.getDate().toString().padStart(2, '0')}/${(candidateDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                availableDates.push({
+                    fullDate: new Date(candidateDate),
+                    display: `${weekDays[candidateDate.getDay()]}, ${dayStr}`,
+                    value: `${candidateDate.getFullYear()}-${candidateDate.getMonth() + 1}-${candidateDate.getDate()}`
+                });
+                daysAdded++;
+            }
+            offset++;
+        }
+
+        let selectedDate = null, selectedHour = null, selectedService = null, preSelectedService = null;
+
+        function renderDates() {
+            const cont = document.getElementById('datesContainer');
+            cont.innerHTML = '';
+            availableDates.forEach(date => {
+                const btn = document.createElement('div');
+                btn.classList.add('date-btn');
+                btn.textContent = date.display;
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedDate = date;
+                    document.getElementById('nextToHours').disabled = false;
+                });
+                cont.appendChild(btn);
+            });
+        }
+
+        async function renderHoursWithBlocked(date) {
+            const cont = document.getElementById('hoursContainer');
+            cont.innerHTML = '';
+            const availableHours = getAvailableHoursForDate(date.fullDate);
+            if (availableHours.length === 0) {
+                const msg = document.createElement('div');
+                msg.textContent = "Nenhum horário disponível para este dia.";
+                msg.style.textAlign = "center";
+                msg.style.padding = "20px";
+                msg.style.color = "#ff8888";
+                cont.appendChild(msg);
+                document.getElementById('nextToServiceOrName').disabled = true;
+                return;
+            }
+
+            const now = new Date();
+            const isToday = date.fullDate.toDateString() === now.toDateString();
+
+            let hasAvailable = false;
+            for (const hour of availableHours) {
+                // Se for hoje, verificar se o horário já passou
+                if (isToday) {
+                    const [hourNum, minuteNum] = hour.split(':').map(Number);
+                    const appointmentTime = new Date(now);
+                    appointmentTime.setHours(hourNum, minuteNum, 0, 0);
+                    if (appointmentTime < now) continue; // horário já passado, não exibe
+                }
+
+                const blocked = await isSlotBlockedFirebase(date, hour);
+                const btn = document.createElement('div');
+                btn.classList.add('hour-btn');
+                if (blocked) {
+                    btn.classList.add('blocked');
+                    btn.textContent = `${hour} ❌`;
+                    btn.style.cursor = 'not-allowed';
+                } else {
+                    btn.textContent = hour;
+                    btn.addEventListener('click', () => {
+                        if (btn.classList.contains('blocked')) return;
+                        document.querySelectorAll('.hour-btn').forEach(el => el.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedHour = hour;
+                        document.getElementById('nextToServiceOrName').disabled = false;
+                    });
+                    hasAvailable = true;
+                }
+                cont.appendChild(btn);
+            }
+
+            if (!hasAvailable) {
+                const msg = document.createElement('div');
+                msg.textContent = "Nenhum horário disponível para hoje (horários já passados ou todos ocupados).";
+                msg.style.textAlign = "center";
+                msg.style.padding = "20px";
+                msg.style.color = "#ff8888";
+                cont.appendChild(msg);
+                document.getElementById('nextToServiceOrName').disabled = true;
+            }
+        }
+
+        function renderServices() {
+            const cont = document.getElementById('servicesContainer');
+            cont.innerHTML = '';
+            serviceList.forEach(service => {
+                const btn = document.createElement('div');
+                btn.classList.add('service-btn');
+                btn.textContent = `${service.name} - R$ ${service.price}`;
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.service-btn').forEach(el => el.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedService = service;
+                    document.getElementById('nextToNameFromService').disabled = false;
+                });
+                cont.appendChild(btn);
+            });
+        }
+
+        const stepDateDiv = document.getElementById('stepDate'), stepHourDiv = document.getElementById('stepHour'), stepServiceDiv = document.getElementById('stepService'), stepNameDiv = document.getElementById('stepName');
+        const nextToHoursBtn = document.getElementById('nextToHours'), nextToServiceOrNameBtn = document.getElementById('nextToServiceOrName');
+        const backToDateBtn = document.getElementById('backToDate'), backToHourFromService = document.getElementById('backToHourFromService'), backToPrevStepBtn = document.getElementById('backToPrevStep');
+        const nextToNameFromService = document.getElementById('nextToNameFromService');
+        const confirmBtn = document.getElementById('confirmBooking'), clientNameInput = document.getElementById('clientName'), nameErrorDiv = document.getElementById('nameError');
+        let flowHasServiceSelection = true;
+
+        function showStep(step) {
+            stepDateDiv.style.display = 'none';
+            stepHourDiv.style.display = 'none';
+            stepServiceDiv.style.display = 'none';
+            stepNameDiv.style.display = 'none';
+            if (step === 'date') stepDateDiv.style.display = 'block';
+            if (step === 'hour') stepHourDiv.style.display = 'block';
+            if (step === 'service') stepServiceDiv.style.display = 'block';
+            if (step === 'name') stepNameDiv.style.display = 'block';
+        }
+
+        function resetBooking() {
+            selectedDate = null;
+            selectedHour = null;
+            selectedService = null;
+            preSelectedService = null;
+            document.getElementById('nextToHours').disabled = true;
+            document.getElementById('nextToServiceOrName').disabled = true;
+            if (nextToNameFromService) nextToNameFromService.disabled = true;
+            showStep('date');
+            document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected'));
+        }
+
+        nextToHoursBtn.addEventListener('click', async () => {
+            if (selectedDate) {
+                await renderHoursWithBlocked(selectedDate);
+                showStep('hour');
+                selectedHour = null;
+                document.getElementById('nextToServiceOrName').disabled = true;
+            }
+        });
+        backToDateBtn.addEventListener('click', () => showStep('date'));
+        nextToServiceOrNameBtn.addEventListener('click', async () => {
+            if (selectedHour && !(await isSlotBlockedFirebase(selectedDate, selectedHour))) {
+                if (flowHasServiceSelection && !preSelectedService) {
+                    renderServices();
+                    showStep('service');
+                    selectedService = null;
+                    if (nextToNameFromService) nextToNameFromService.disabled = true;
+                } else {
+                    if (preSelectedService) selectedService = preSelectedService;
+                    showStep('name');
+                    clientNameInput.value = '';
+                    nameErrorDiv.innerText = '';
+                }
+            } else if (selectedHour && (await isSlotBlockedFirebase(selectedDate, selectedHour))) {
+                alert("Horário não disponível.");
+                await renderHoursWithBlocked(selectedDate);
+                selectedHour = null;
+                document.getElementById('nextToServiceOrName').disabled = true;
+            }
+        });
+        if (backToHourFromService) backToHourFromService.addEventListener('click', () => showStep('hour'));
+        if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => {
+            if (selectedService) {
+                showStep('name');
+                clientNameInput.value = '';
+                nameErrorDiv.innerText = '';
+            }
+        });
+        backToPrevStepBtn.addEventListener('click', () => {
+            if (flowHasServiceSelection && !preSelectedService) showStep('service');
+            else showStep('hour');
+        });
+        confirmBtn.addEventListener('click', async () => {
+            const nome = clientNameInput.value.trim();
+            if (nome === "") {
+                nameErrorDiv.innerText = "Digite seu nome completo.";
+                return;
+            }
+            if (nome.length < 3) {
+                nameErrorDiv.innerText = "Nome muito curto.";
+                return;
+            }
+            if (await isSlotBlockedFirebase(selectedDate, selectedHour)) {
+                alert("Horário não disponível.");
+                closeBookingModal();
+                resetBooking();
+                return;
+            }
+            const success = await addAppointmentToFirebase(selectedDate, selectedHour, selectedService.name, selectedService.price, nome);
+            if (!success) {
+                alert("Horário já ocupado.");
+                closeBookingModal();
+                resetBooking();
+                return;
+            }
+            const msg = `*NOVO AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardamos você!%0A%0A⚠️ ATENÇÃO: O agendamento será confirmado somente após o envio do comprovante de pagamento via PIX.`;
+            closeBookingModal();
+            window.open(`https://wa.me/5591984006046?text=${msg}`, '_blank');
+            alert("✅ Agendamento solicitado! Envie o comprovante do PIX para confirmar.");
+            resetBooking();
+        });
+
+        const bookingModal = document.getElementById('bookingModal'), closeModalBtn = document.getElementById('closeModalBtn');
+        function openBookingModal(preselect = false, serviceName = null, servicePrice = null) {
+            resetBooking();
+            flowHasServiceSelection = !preselect;
+            if (preselect && serviceName && servicePrice) {
+                preSelectedService = { name: serviceName, price: servicePrice };
+                selectedService = preSelectedService;
+            } else {
+                preSelectedService = null;
+                selectedService = null;
+            }
+            renderDates();
+            showStep('date');
+            bookingModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeBookingModal() {
+            bookingModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        document.querySelectorAll('.open-modal-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const preselect = btn.getAttribute('data-preselect-service') === 'true';
+                const sName = btn.getAttribute('data-service-name');
+                const sPrice = btn.getAttribute('data-service-price');
+                if (preselect && sName && sPrice) openBookingModal(true, sName, parseInt(sPrice));
+                else openBookingModal(false);
+            });
+        });
+        closeModalBtn.addEventListener('click', closeBookingModal);
+        bookingModal.addEventListener('click', (e) => { if (e.target === bookingModal) closeBookingModal(); });
+
+        // Admin
+        const adminLoginModal = document.getElementById('adminLoginModal'), adminListModal = document.getElementById('adminListModal'), adminLink = document.getElementById('adminLink');
+        const closeAdminLoginBtn = document.getElementById('closeAdminLoginBtn'), closeAdminListBtn = document.getElementById('closeAdminListBtn'), doLoginBtn = document.getElementById('doLoginBtn'), refreshBtn = document.getElementById('refreshAppointmentsBtn');
+        function openAdminLogin() { adminLoginModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeAdminLogin() { adminLoginModal.classList.remove('active'); document.body.style.overflow = ''; document.getElementById('loginError').innerText = ''; }
+        function openAdminList() { renderAppointmentsList(); adminListModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeAdminList() { adminListModal.classList.remove('active'); document.body.style.overflow = ''; }
+        adminLink.addEventListener('click', (e) => { e.preventDefault(); openAdminLogin(); });
+        closeAdminLoginBtn.addEventListener('click', closeAdminLogin); closeAdminListBtn.addEventListener('click', closeAdminList); refreshBtn.addEventListener('click', () => renderAppointmentsList());
+        doLoginBtn.addEventListener('click', () => { const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value; if (u === 'Hgbarbeiro' && p === 'Hgdocorte') { closeAdminLogin(); openAdminList(); document.getElementById('adminUser').value = ''; document.getElementById('adminPass').value = ''; } else { document.getElementById('loginError').innerText = 'Usuário ou senha inválidos.'; } });
+
+        // Menu Hambúrguer
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinksMenu = document.getElementById('navLinks');
+        const overlayMenu = document.getElementById('overlay');
+        function closeNav() {
+            navLinksMenu.classList.remove('active');
+            overlayMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        function openNav() {
+            navLinksMenu.classList.add('active');
+            overlayMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        if (menuToggle && navLinksMenu && overlayMenu) {
+            menuToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (navLinksMenu.classList.contains('active')) closeNav();
+                else openNav();
+            });
+            overlayMenu.addEventListener('click', closeNav);
+            document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', closeNav));
+        }
+        document.querySelectorAll('a[href^="#"]:not(#adminLink)').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const t = document.querySelector(this.getAttribute('href'));
+                if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+            });
+        });
+
+        // Botão copiar chave PIX
+        const copyBtn = document.getElementById('copyPixKeyBtn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                const pixKey = document.getElementById('pixKeyValue').innerText;
+                navigator.clipboard.writeText(pixKey).then(() => {
+                    alert("Chave PIX copiada para a área de transferência!");
+                }).catch(() => alert("Não foi possível copiar. Copie manualmente."));
+            });
+        }
     </script>
 </body>
 
