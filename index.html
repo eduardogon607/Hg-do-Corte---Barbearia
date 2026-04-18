@@ -5,17 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Hg do Corte | Agendamento com Firebase</title>
-    <!-- Google Fonts + Font Awesome -->
+    <title>Hg do Corte | Agendamento Completo</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <style>
-        /* (mesmo CSS original, mantido integralmente) */
+        /* ========== ESTILOS COMPLETOS ========== */
         * {
             margin: 0;
             padding: 0;
@@ -35,7 +33,6 @@
             --black: #000000;
             --black-light: #111111;
             --gray-dark: #1a1a1a;
-            --glow: rgba(245, 183, 0, 0.4);
         }
 
         .container {
@@ -69,12 +66,12 @@
             justify-content: center;
             gap: 12px;
             background-color: var(--yellow);
-            color: #000000;
+            color: #000;
             font-weight: 700;
             padding: 14px 24px;
             border-radius: 60px;
             text-decoration: none;
-            transition: 0.2s ease;
+            transition: 0.2s;
             font-size: 1rem;
             cursor: pointer;
             border: none;
@@ -179,7 +176,7 @@
             display: flex;
             align-items: center;
             text-align: center;
-            background: radial-gradient(circle at 80% 30%, #1a1a1a 0%, #000000 100%);
+            background: radial-gradient(circle at 80% 30%, #1a1a1a 0%, #000 100%);
         }
 
         .hero h1 {
@@ -211,7 +208,6 @@
             max-width: 280px;
         }
 
-        /* Observação de agendamento */
         .booking-note {
             background: rgba(245, 183, 0, 0.15);
             border-left: 4px solid var(--yellow);
@@ -224,10 +220,12 @@
             text-align: left;
             max-width: 90%;
         }
+
         .booking-note i {
             color: var(--yellow);
             margin-right: 8px;
         }
+
         .booking-note strong {
             color: var(--yellow);
         }
@@ -281,7 +279,6 @@
             color: var(--yellow);
         }
 
-        /* Galeria - cards clicáveis */
         .gallery-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -291,7 +288,7 @@
         .gallery-item {
             background: #1e1e1e;
             border-radius: 24px;
-            aspect-ratio: 1 / 1;
+            aspect-ratio: 1/1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -367,7 +364,7 @@
             font-size: 0.8rem;
         }
 
-        /* MODAL GERAL */
+        /* MODAIS */
         .modal {
             display: none;
             position: fixed;
@@ -389,7 +386,7 @@
         .modal-content {
             background: #0f0f0f;
             width: 90%;
-            max-width: 550px;
+            max-width: 800px;
             border-radius: 48px;
             border: 1px solid rgba(245, 183, 0, 0.5);
             padding: 28px 24px 36px;
@@ -427,7 +424,126 @@
             color: var(--yellow);
         }
 
-        /* ========= INPUTS ELEGANTES ========= */
+        /* Admin tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 40px 40px 0 0;
+            transition: 0.2s;
+        }
+
+        .admin-tab.active {
+            background: var(--yellow);
+            color: black;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Grade de indisponibilidades */
+        .unavailable-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .unavailable-date-group {
+            margin-bottom: 24px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 16px;
+        }
+
+        .unavailable-date-title {
+            font-size: 1.2rem;
+            color: var(--yellow);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .unavailable-hours {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .unavailable-hour-item {
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 40px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .unavailable-hour-item input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--yellow);
+        }
+
+        .unavailable-hour-item label {
+            flex: 1;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .unavailable-hour-item.unavailable label {
+            text-decoration: line-through;
+            color: #ff8888;
+        }
+
+        .unavailable-hour-item.available label {
+            color: #ccc;
+        }
+
+        .unavailable-hour-item:hover {
+            background: #2a2a2a;
+        }
+
+        .date-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .date-actions button {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 5px 12px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .loading-indicator {
+            text-align: center;
+            padding: 10px;
+            color: var(--yellow);
+        }
+
+        /* Inputs */
         .input-group {
             margin-bottom: 24px;
             position: relative;
@@ -452,19 +568,14 @@
             color: white;
             font-size: 1rem;
             font-weight: 500;
-            transition: all 0.25s ease;
+            transition: all 0.25s;
             outline: none;
         }
 
         .elegant-input:focus {
             border-color: var(--yellow);
-            box-shadow: 0 0 0 3px rgba(245, 183, 0, 0.2), 0 0 0 1px var(--yellow);
+            box-shadow: 0 0 0 3px rgba(245, 183, 0, 0.2);
             background: #222;
-        }
-
-        .elegant-input::placeholder {
-            color: #888;
-            font-weight: 400;
         }
 
         .confirm-btn {
@@ -486,15 +597,12 @@
             transform: scale(0.98);
         }
 
-        /* Login admin */
         .login-error {
             color: #ff8888;
             margin-top: 16px;
             text-align: center;
-            font-weight: 500;
         }
 
-        /* Lista admin */
         .appointment-list {
             max-height: 55vh;
             overflow-y: auto;
@@ -514,18 +622,24 @@
             gap: 12px;
         }
 
-        .appointment-info strong {
-            color: var(--yellow);
-        }
-
-        .delete-appointment {
-            background: #aa2e2e;
+        .delete-appointment,
+        .approve-appointment,
+        .delete-confirmed {
             border: none;
             color: white;
             padding: 8px 18px;
             border-radius: 40px;
             font-weight: bold;
             cursor: pointer;
+        }
+
+        .delete-appointment,
+        .delete-confirmed {
+            background: #aa2e2e;
+        }
+
+        .approve-appointment {
+            background: #2e7d32;
         }
 
         /* Calendário e horários */
@@ -583,17 +697,7 @@
             font-size: 0.8rem;
         }
 
-        .clear-bookings {
-            margin-top: 20px;
-            font-size: 0.7rem;
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-
-        /* ========= CARROSSEL POR CATEGORIA ========= */
+        /* Carrossel */
         .carousel-modal {
             background: rgba(0, 0, 0, 0.98);
         }
@@ -628,7 +732,6 @@
         .carousel-caption {
             margin-top: 20px;
             color: var(--yellow);
-            font-weight: 600;
             background: rgba(0, 0, 0, 0.6);
             padding: 8px 20px;
             border-radius: 40px;
@@ -646,7 +749,6 @@
             cursor: pointer;
             padding: 12px;
             border-radius: 60px;
-            transition: 0.2s;
             width: 50px;
             height: 50px;
             display: flex;
@@ -676,13 +778,9 @@
             border: none;
             color: white;
             font-size: 1.8rem;
-            cursor: pointer;
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             z-index: 20;
         }
 
@@ -706,7 +804,8 @@
             border-radius: 12px;
         }
 
-        @media (min-width: 768px) {
+        @media (min-width:768px) {
+
             .carousel-prev {
                 left: 20px;
             }
@@ -716,13 +815,11 @@
             }
 
             .carousel-btn {
-                font-size: 2rem;
                 width: 60px;
                 height: 60px;
             }
         }
 
-        /* ========= OBSERVAÇÕES (espera e PIX) ========= */
         .waiting-info {
             background: rgba(245, 183, 0, 0.1);
             border-left: 4px solid var(--yellow);
@@ -730,20 +827,9 @@
             padding: 12px 16px;
             margin: 16px 0 8px;
             display: flex;
-            align-items: flex-start;
             gap: 12px;
             font-size: 0.85rem;
             color: #ddd;
-        }
-
-        .waiting-info i {
-            color: var(--yellow);
-            font-size: 1.2rem;
-            margin-top: 2px;
-        }
-
-        .waiting-info span {
-            line-height: 1.4;
         }
 
         .pix-info {
@@ -785,7 +871,6 @@
             border-radius: 40px;
             font-size: 0.75rem;
             cursor: pointer;
-            transition: 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -801,6 +886,12 @@
             font-size: 0.75rem;
             color: #aaa;
             text-align: center;
+        }
+
+        .empty-list {
+            padding: 20px;
+            text-align: center;
+            color: #aaa;
         }
     </style>
 </head>
@@ -839,7 +930,7 @@
                     <div class="booking-note">
                         <i class="fas fa-info-circle"></i>
                         <strong>📅 Agendamentos online apenas de SEGUNDA a SEXTA-FEIRA.</strong><br>
-                        Aos sábados e domingos a barbearia funciona normalmente nos horários estabelecidos, mas não oferecemos reserva de horário via site.
+                        Aos sábados e domingos a barbearia funciona normalmente, mas sem reserva online.
                     </div>
                 </div>
             </div>
@@ -853,7 +944,7 @@
                     <div class="service-card">
                         <div class="service-icon"><i class="fas fa-cut"></i></div>
                         <h3>Corte Degradê</h3>
-                        <p>Acabamento navalhado e técnicas modernas.</p>
+                        <p>Acabamento navalhado.</p>
                         <div class="price">R$ 30</div>
                         <button class="btn open-modal-btn" data-preselect-service="true" data-service-name="Degrade"
                             data-service-price="30"><i class="fas fa-clock"></i> Agendar</button>
@@ -861,7 +952,7 @@
                     <div class="service-card">
                         <div class="service-icon"><i class="fas fa-beard"></i></div>
                         <h3>Barba Completa</h3>
-                        <p> massagem e navalha.</p>
+                        <p>Massagem e navalha.</p>
                         <div class="price">R$ 20</div>
                         <button class="btn open-modal-btn" data-preselect-service="true" data-service-name="Barba"
                             data-service-price="20"><i class="fas fa-clock"></i> Agendar</button>
@@ -892,19 +983,12 @@
                 <div class="about-content">
                     <div class="about-text">
                         <h2>Hg do Corte<br><span style="color:var(--yellow);">Estilo e tradição</span></h2>
-                        <p>Fundada em Belém, no bairro da Marambaia, a barbearia Hg do Corte é referência em corte
-                            masculino! Ambiente urbano e os melhores barbeiros.</p>
-                        <p>Amarelo = energia. Preto = elegância. Cada corte pensado pra você.</p>
+                        <p>Fundada em Belém, na Marambaia, referência em corte masculino!</p>
+                        <p>Amarelo = energia. Preto = elegância.</p>
                     </div>
                     <div class="about-stats">
-                        <div class="stat-item">
-                            <div class="stat-number">+2.500</div>
-                            <div>clientes felizes</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">4</div>
-                            <div>barbeiros experts</div>
-                        </div>
+                        <div class="stat-item"><div class="stat-number">+2.500</div><div>clientes felizes</div></div>
+                        <div class="stat-item"><div class="stat-number">4</div><div>barbeiros experts</div></div>
                     </div>
                 </div>
             </div>
@@ -915,14 +999,10 @@
                 <h2>Inspire-se</h2>
                 <div class="section-subtitle">Clique em qualquer estilo para ver fotos reais</div>
                 <div class="gallery-grid" id="galleryGrid">
-                    <div class="gallery-item" data-category="degrade"><i class="fas fa-cut"></i><span>Degradê</span>
-                    </div>
-                    <div class="gallery-item" data-category="barba"><i class="fas fa-user-tie"></i><span>Barba
-                            feita</span></div>
-                    <div class="gallery-item" data-category="moderno"><i class="fas fa-mask"></i><span>Moderno</span>
-                    </div>
-                    <div class="gallery-item" data-category="exclusivo"><i
-                            class="fas fa-crown"></i><span>Exclusivo</span></div>
+                    <div class="gallery-item" data-category="degrade"><i class="fas fa-cut"></i><span>Degradê</span></div>
+                    <div class="gallery-item" data-category="barba"><i class="fas fa-user-tie"></i><span>Barba feita</span></div>
+                    <div class="gallery-item" data-category="moderno"><i class="fas fa-mask"></i><span>Moderno</span></div>
+                    <div class="gallery-item" data-category="exclusivo"><i class="fas fa-crown"></i><span>Exclusivo</span></div>
                 </div>
             </div>
         </section>
@@ -933,15 +1013,12 @@
                 <div class="contact-wrapper">
                     <div class="contact-info">
                         <h3><i class="fas fa-store"></i> Hg do Corte</h3>
-                        <div class="info-detail"><i class="fas fa-map-pin"></i><span>Passagem Samaritana, Marambaia,
-                                Belém PA</span></div>
+                        <div class="info-detail"><i class="fas fa-map-pin"></i><span>Passagem Samaritana, Marambaia, Belém PA</span></div>
                         <div class="info-detail"><i class="fas fa-phone-alt"></i><span>(91) 98400-6046</span></div>
                         <div class="info-detail"><i class="fab fa-whatsapp"></i><span>(91) 98400-6046</span></div>
-                        <div class="info-detail"><i
-                                class="fas fa-envelope"></i><span>hugokauanmiranda11@gmail.com</span></div>
+                        <div class="info-detail"><i class="fas fa-envelope"></i><span>hugokauanmiranda11@gmail.com</span></div>
                         <div class="social-links">
-                            <a href="https://www.instagram.com/hgdocorte_/" target="_blank"><i
-                                    class="fab fa-instagram"></i></a>
+                            <a href="https://www.instagram.com/hgdocorte_/" target="_blank"><i class="fab fa-instagram"></i></a>
                             <a href="https://wa.me/5591984006046" target="_blank"><i class="fab fa-whatsapp"></i></a>
                         </div>
                     </div>
@@ -950,8 +1027,7 @@
                         <div class="hours-row"><span>Seg - Sex</span><span>09h - 12h / 15h - 20h</span></div>
                         <div class="hours-row"><span>Sábado</span><span>09h - 20h</span></div>
                         <div class="hours-row"><span>Domingo</span><span>09h - 12h</span></div>
-                        <button class="btn open-modal-btn" data-preselect-service="false"
-                            style="margin-top:24px; width:100%"><i class="fab fa-whatsapp"></i> AGENDAR ONLINE</button>
+                        <button class="btn open-modal-btn" data-preselect-service="false" style="margin-top:24px; width:100%"><i class="fab fa-whatsapp"></i> AGENDAR ONLINE</button>
                     </div>
                 </div>
             </div>
@@ -964,7 +1040,7 @@
         </div>
     </footer>
 
-    <!-- MODAIS -->
+    <!-- MODAL DE AGENDAMENTO -->
     <div id="bookingModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -975,93 +1051,67 @@
                 <div id="stepDate">
                     <div class="input-label"><i class="fas fa-calendar-day"></i> Selecione o dia</div>
                     <div id="datesContainer" class="date-grid"></div>
-                    <button id="nextToHours" class="btn" style="width:100%; background:#333; color:white;"
-                        disabled>Próximo →</button>
+                    <button id="nextToHours" class="btn" style="width:100%; background:#333; color:white;" disabled>Próximo →</button>
                 </div>
                 <div id="stepHour" style="display:none;">
                     <div class="input-label"><i class="fas fa-clock"></i> Escolha o horário</div>
                     <div id="hoursContainer" class="hours-grid"></div>
-                    <div class="waiting-info">
-                        <i class="fas fa-hourglass-half"></i>
-                        <span>⏱️ Tolerância de espera de 15 a 20 minutos (dependendo do serviço do cliente
-                            anterior).<br> O atendimento pode ultrapassar 1 hora.</span>
-                    </div>
-                    <button id="backToDate" class="btn-outline btn" style="margin-top:12px; width:100%;">←
-                        Voltar</button>
-                    <button id="nextToServiceOrName" class="btn" style="margin-top:12px; width:100%;"
-                        disabled>Continuar →</button>
+                    <div class="waiting-info"><i class="fas fa-hourglass-half"></i><span>⏱️ Tolerância de espera de 15 a 20 minutos.<br> O atendimento pode ultrapassar 1 hora.</span></div>
+                    <button id="backToDate" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
+                    <button id="nextToServiceOrName" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
                 </div>
                 <div id="stepService" style="display:none;">
                     <div class="input-label"><i class="fas fa-cut"></i> Selecione o serviço</div>
                     <div id="servicesContainer" class="services-grid-select"></div>
-                    <button id="backToHourFromService" class="btn-outline btn" style="margin-top:12px; width:100%;">←
-                        Voltar</button>
-                    <button id="nextToNameFromService" class="btn" style="margin-top:12px; width:100%;"
-                        disabled>Continuar →</button>
+                    <button id="backToHourFromService" class="btn-outline btn" style="margin-top:12px; width:100%;">← Voltar</button>
+                    <button id="nextToNameFromService" class="btn" style="margin-top:12px; width:100%;" disabled>Continuar →</button>
                 </div>
                 <div id="stepName" style="display:none;">
-                    <div class="input-group">
-                        <i class="fas fa-user-astronaut"></i>
-                        <input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo"
-                            autocomplete="off">
-                    </div>
+                    <div class="input-group"><i class="fas fa-user-astronaut"></i><input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo" autocomplete="off"></div>
                     <div id="nameError" class="error-msg" style="color:#ff8888; margin-bottom:12px;"></div>
                     <div class="pix-info">
                         <div><i class="fas fa-credit-card"></i> <strong>Pagamento via PIX</strong></div>
-                        <div class="pix-row">
-                            <span class="pix-label">Chave:</span>
-                            <span class="pix-value" id="pixKeyValue">hugokauamiranda11@gmail.com</span>
-                            <button class="copy-btn" id="copyPixKeyBtn"><i class="fas fa-copy"></i> Copiar</button>
-                        </div>
-                        <div class="pix-row">
-                            <span class="pix-label">Banco:</span>
-                            <span class="pix-value">Bradesco</span>
-                        </div>
-                        <div class="pix-row">
-                            <span class="pix-label">Nome:</span>
-                            <span class="pix-value">Hugo Santos</span>
-                        </div>
-                        <div class="pix-note">
-                            💡 O agendamento só será confirmado após o envio do comprovante de pagamento via WhatsApp.
-                        </div>
+                        <div class="pix-row"><span class="pix-label">Chave:</span><span class="pix-value" id="pixKeyValue">hugokauamiranda11@gmail.com</span><button class="copy-btn" id="copyPixKeyBtn"><i class="fas fa-copy"></i> Copiar</button></div>
+                        <div class="pix-row"><span class="pix-label">Banco:</span><span class="pix-value">Bradesco</span></div>
+                        <div class="pix-row"><span class="pix-label">Nome:</span><span class="pix-value">Hugo Santos</span></div>
+                        <div class="pix-note">📌 O agendamento só será confirmado mediante envio do comprovante de pagamento via WhatsApp.</div>
                     </div>
                     <button id="backToPrevStep" class="btn-outline btn" style="width:100%;">← Voltar</button>
-                    <button id="confirmBooking" class="confirm-btn"><i class="fas fa-check-circle"></i> Confirmar
-                        Agendamento</button>
+                    <button id="confirmBooking" class="confirm-btn"><i class="fas fa-check-circle"></i> Solicitar Agendamento</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAIS ADMIN -->
     <div id="adminLoginModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-lock"></i> Acesso Restrito</h3><button class="close-modal"
-                    id="closeAdminLoginBtn">&times;</button>
-            </div>
+            <div class="modal-header"><h3><i class="fas fa-lock"></i> Acesso Restrito</h3><button class="close-modal" id="closeAdminLoginBtn">&times;</button></div>
             <div id="loginForm">
-                <div class="input-group"><i class="fas fa-user-shield"></i><input type="text" id="adminUser"
-                        class="elegant-input" placeholder="Usuário"></div>
-                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="adminPass"
-                        class="elegant-input" placeholder="Senha"></div><button id="doLoginBtn"
-                    class="confirm-btn">Entrar</button>
+                <div class="input-group"><i class="fas fa-user-shield"></i><input type="text" id="adminUser" class="elegant-input" placeholder="Usuário"></div>
+                <div class="input-group"><i class="fas fa-key"></i><input type="password" id="adminPass" class="elegant-input" placeholder="Senha"></div>
+                <button id="doLoginBtn" class="confirm-btn">Entrar</button>
                 <div id="loginError" class="login-error"></div>
             </div>
         </div>
     </div>
 
     <div id="adminListModal" class="modal">
-        <div class="modal-content" style="max-width:600px;">
-            <div class="modal-header">
-                <h3><i class="fas fa-calendar-list"></i> Agendamentos</h3><button class="close-modal"
-                    id="closeAdminListBtn">&times;</button>
+        <div class="modal-content" style="max-width:800px;">
+            <div class="modal-header"><h3><i class="fas fa-calendar-list"></i> Painel do Admin</h3><button class="close-modal" id="closeAdminListBtn">&times;</button></div>
+            <div class="admin-tabs">
+                <div class="admin-tab active" data-tab="pending">📋 Solicitações Pendentes</div>
+                <div class="admin-tab" data-tab="confirmed">✅ Agendamentos Confirmados</div>
+                <div class="admin-tab" data-tab="unavailable">🚫 Indisponibilidades</div>
             </div>
-            <div id="appointmentsList" class="appointment-list"></div>
-            <button id="refreshAppointmentsBtn" class="btn"
-                style="margin-top:20px; width:100%; background:#333;">Atualizar</button>
+            <div id="pendingTab" class="tab-content active"><div id="pendingList" class="appointment-list"></div></div>
+            <div id="confirmedTab" class="tab-content"><div id="confirmedList" class="appointment-list"></div></div>
+            <div id="unavailableTab" class="tab-content"><div id="unavailableGridContainer"></div></div>
+            <button id="refreshAdminBtn" class="btn" style="margin-top:20px; width:100%; background:#333;">Atualizar Tudo</button>
         </div>
     </div>
 
+    <!-- CARROSSEL -->
     <div id="carouselModal" class="modal carousel-modal">
         <div class="carousel-container">
             <button class="carousel-close" id="closeCarouselBtn">&times;</button>
@@ -1074,7 +1124,7 @@
     </div>
 
     <script>
-        // ========== CONFIGURAÇÃO DO FIREBASE ==========
+        // ========== CONFIGURAÇÃO FIREBASE ==========
         const firebaseConfig = {
             apiKey: "AIzaSyC5yqyJE2EkVyepT0S61ViuA3RPpGESBV4",
             authDomain: "hg-barbearia.firebaseapp.com",
@@ -1085,279 +1135,402 @@
             appId: "1:845108565731:web:9256878c18d5b7b69597d6",
             measurementId: "G-EDZQ3YP0PS"
         };
-
-        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const appointmentsRef = database.ref("appointments");
+        const pendingRef = database.ref("pending_appointments");
+        const unavailableRef = database.ref("unavailable_slots");
 
         // ========== LISTA DE SERVIÇOS ==========
         const serviceList = [
-            { name: "Barba", price: 20 },
-            { name: "Degrade", price: 30 },
-            { name: "Social", price: 20 },
-            { name: "Corte + pigmentação", price: 55 },
-            { name: "Nevou", price: 110 },
-            { name: "Selagem", price: 100 },
-            { name: "Luzes", price: 100 },
-            { name: "Reflexo", price: 100 },
-            { name: "Corte todo na tesoura", price: 30 },
+            { name: "Barba", price: 20 }, { name: "Degrade", price: 30 }, { name: "Social", price: 20 },
+            { name: "Corte + pigmentação", price: 55 }, { name: "Nevou", price: 110 }, { name: "Selagem", price: 100 },
+            { name: "Luzes", price: 100 }, { name: "Reflexo", price: 100 }, { name: "Corte todo na tesoura", price: 30 },
             { name: "Corte + barba", price: 50 }
         ];
 
-        // ========== FOTOS E VÍDEOS (carrossel) ==========
+        // ========== FOTOS CARROSSEL ==========
         const categoryPhotos = {
-            degrade: [
-                { src: "WhatsApp Image 2026-04-10 at 11.34.17.jpeg", title: "Corte + Pigmentação - R$55,00" },
-                { src: "WhatsApp Image 2026-04-10 at 11.34.17 (1).jpeg", title: "Degradê - R$30,00" },
-                { src: "WhatsApp Image 2026-04-10 at 11.34.18.jpeg", title: "Corte + Pigmentação - R$55,00" }
-            ],
-            barba: [
-                { src: "WhatsApp Image 2026-04-13 at 09.40.31.jpeg", title: "Barba Taperfade - R$20,00" },
-                { src: "WhatsApp Image 2026-04-13 at 09.51.35.jpeg", title: "Barba Taperfade - R$20,00" },
-                { src: "WhatsApp Video 2026-04-13 at 09.51.29.mp4", title: "Barba Taperfade - R$20,00" }
-            ],
-            moderno: [
-                { src: "WhatsApp Image 2026-04-10 at 11.34.15.jpeg", title: "Americano - R$30,00" },
-                { src: "WhatsApp Image 2026-04-10 at 11.34.16 (1).jpeg", title: "Jit Fade - R$30,00" },
-                { src: "WhatsApp Image 2026-04-10 at 11.34.14.jpeg", title: "Americano - R$30,00" }
-            ],
-            exclusivo: [
-                { src: "WhatsApp Image 2026-04-10 at 11.34.11.jpeg", title: "Luzes - R$100,00" },
-                { src: "WhatsApp Image 2026-04-10 at 11.34.12.jpeg", title: "Reflexo - R$100,00" },
-                { src: "WhatsApp Image 2026-04-10 at 11.34.16.jpeg", title: "Nevou - R$110,00" }
-            ]
+            degrade: [{ src: "WhatsApp Image 2026-04-10 at 11.34.17.jpeg", title: "Corte + Pigmentação - R$55,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.17 (1).jpeg", title: "Degradê - R$30,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.18.jpeg", title: "Corte + Pigmentação - R$55,00" }],
+            barba: [{ src: "WhatsApp Image 2026-04-13 at 09.40.31.jpeg", title: "Barba Taperfade - R$20,00" }, { src: "WhatsApp Image 2026-04-13 at 09.51.35.jpeg", title: "Barba Taperfade - R$20,00" }, { src: "WhatsApp Video 2026-04-13 at 09.51.29.mp4", title: "Barba Taperfade - R$20,00" }],
+            moderno: [{ src: "WhatsApp Image 2026-04-10 at 11.34.15.jpeg", title: "Americano - R$30,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.16 (1).jpeg", title: "Jit Fade - R$30,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.14.jpeg", title: "Americano - R$30,00" }],
+            exclusivo: [{ src: "WhatsApp Image 2026-04-10 at 11.34.11.jpeg", title: "Luzes - R$100,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.12.jpeg", title: "Reflexo - R$100,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.16.jpeg", title: "Nevou - R$110,00" }]
         };
 
         // ========== CARROSSEL ==========
-        let currentCarouselPhotos = [];
-        let currentPhotoIndex = 0;
+        let currentCarouselPhotos = [], currentPhotoIndex = 0;
         const carouselModalEl = document.getElementById('carouselModal');
         const carouselMedia = document.getElementById('carouselMedia');
         const carouselCaption = document.getElementById('carouselCaption');
         const carouselDots = document.getElementById('carouselDots');
-
-        function isVideoFile(src) {
-            return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(src);
-        }
-
-        function updateCarousel() {
-            if (!currentCarouselPhotos.length) return;
-            const media = currentCarouselPhotos[currentPhotoIndex];
-            const src = media.src;
-            const title = media.title;
-            carouselMedia.innerHTML = '';
-            if (isVideoFile(src)) {
-                const video = document.createElement('video');
-                video.src = src;
-                video.controls = true;
-                video.autoplay = false;
-                video.loop = true;
-                video.playsInline = true;
-                video.muted = false;
-                video.style.maxWidth = '100%';
-                video.style.maxHeight = '70vh';
-                video.style.borderRadius = '24px';
-                video.style.outline = 'none';
-                carouselMedia.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = title;
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '70vh';
-                img.style.borderRadius = '24px';
-                img.style.objectFit = 'contain';
-                carouselMedia.appendChild(img);
-            }
-            carouselCaption.textContent = title;
-            const dots = document.querySelectorAll('#carouselDots .dot');
-            dots.forEach((dot, idx) => {
-                if (idx === currentPhotoIndex) dot.classList.add('active');
-                else dot.classList.remove('active');
-            });
-        }
-
-        function buildDots() {
-            carouselDots.innerHTML = '';
-            currentCarouselPhotos.forEach((_, idx) => {
-                const dot = document.createElement('div');
-                dot.classList.add('dot');
-                if (idx === currentPhotoIndex) dot.classList.add('active');
-                dot.addEventListener('click', () => {
-                    currentPhotoIndex = idx;
-                    updateCarousel();
-                });
-                carouselDots.appendChild(dot);
-            });
-        }
-
-        function openCarousel(categoryKey) {
-            const photos = categoryPhotos[categoryKey];
-            if (!photos || photos.length === 0) {
-                alert("Nenhuma mídia disponível para esta categoria.");
-                return;
-            }
-            currentCarouselPhotos = photos;
-            currentPhotoIndex = 0;
-            buildDots();
-            updateCarousel();
-            carouselModalEl.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeCarousel() {
-            carouselModalEl.classList.remove('active');
-            document.body.style.overflow = '';
-            const video = carouselMedia.querySelector('video');
-            if (video) video.pause();
-        }
-
+        function isVideoFile(src) { return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(src); }
+        function updateCarousel() { if (!currentCarouselPhotos.length) return; const media = currentCarouselPhotos[currentPhotoIndex]; const src = media.src, title = media.title; carouselMedia.innerHTML = ''; if (isVideoFile(src)) { const video = document.createElement('video'); video.src = src; video.controls = true; video.autoplay = false; video.loop = true; video.playsInline = true; video.muted = false; video.style.maxWidth = '100%'; video.style.maxHeight = '70vh'; video.style.borderRadius = '24px'; carouselMedia.appendChild(video); } else { const img = document.createElement('img'); img.src = src; img.alt = title; img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; img.style.borderRadius = '24px'; img.style.objectFit = 'contain'; carouselMedia.appendChild(img); } carouselCaption.textContent = title; const dots = document.querySelectorAll('#carouselDots .dot'); dots.forEach((dot, idx) => { if (idx === currentPhotoIndex) dot.classList.add('active'); else dot.classList.remove('active'); }); }
+        function buildDots() { carouselDots.innerHTML = ''; currentCarouselPhotos.forEach((_, idx) => { const dot = document.createElement('div'); dot.classList.add('dot'); if (idx === currentPhotoIndex) dot.classList.add('active'); dot.addEventListener('click', () => { currentPhotoIndex = idx; updateCarousel(); }); carouselDots.appendChild(dot); }); }
+        function openCarousel(categoryKey) { const photos = categoryPhotos[categoryKey]; if (!photos || photos.length === 0) { alert("Nenhuma mídia disponível."); return; } currentCarouselPhotos = photos; currentPhotoIndex = 0; buildDots(); updateCarousel(); carouselModalEl.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closeCarousel() { carouselModalEl.classList.remove('active'); document.body.style.overflow = ''; const v = carouselMedia.querySelector('video'); if (v) v.pause(); }
         document.getElementById('closeCarouselBtn').addEventListener('click', closeCarousel);
-        document.getElementById('carouselPrev').addEventListener('click', () => {
-            if (!currentCarouselPhotos.length) return;
-            currentPhotoIndex = (currentPhotoIndex - 1 + currentCarouselPhotos.length) % currentCarouselPhotos.length;
-            updateCarousel();
-        });
-        document.getElementById('carouselNext').addEventListener('click', () => {
-            if (!currentCarouselPhotos.length) return;
-            currentPhotoIndex = (currentPhotoIndex + 1) % currentCarouselPhotos.length;
-            updateCarousel();
-        });
-        carouselModalEl.addEventListener('click', (e) => {
-            if (e.target === carouselModalEl) closeCarousel();
-        });
-        let touchStartX = 0;
-        carouselModalEl.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
-        carouselModalEl.addEventListener('touchend', (e) => {
-            const endX = e.changedTouches[0].screenX;
-            if (endX < touchStartX - 50) document.getElementById('carouselNext').click();
-            if (endX > touchStartX + 50) document.getElementById('carouselPrev').click();
-        });
-        document.querySelectorAll('.gallery-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const cat = item.dataset.category;
-                if (cat && categoryPhotos[cat]) openCarousel(cat);
-                else alert("Nenhuma mídia disponível.");
-            });
-        });
+        document.getElementById('carouselPrev').addEventListener('click', () => { if (currentCarouselPhotos.length) { currentPhotoIndex = (currentPhotoIndex - 1 + currentCarouselPhotos.length) % currentCarouselPhotos.length; updateCarousel(); } });
+        document.getElementById('carouselNext').addEventListener('click', () => { if (currentCarouselPhotos.length) { currentPhotoIndex = (currentPhotoIndex + 1) % currentCarouselPhotos.length; updateCarousel(); } });
+        carouselModalEl.addEventListener('click', (e) => { if (e.target === carouselModalEl) closeCarousel(); });
+        let touchStartX = 0; carouselModalEl.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+        carouselModalEl.addEventListener('touchend', (e) => { const endX = e.changedTouches[0].screenX; if (endX < touchStartX - 50) document.getElementById('carouselNext').click(); if (endX > touchStartX + 50) document.getElementById('carouselPrev').click(); });
+        document.querySelectorAll('.gallery-item').forEach(item => { item.addEventListener('click', () => { const cat = item.dataset.category; if (cat && categoryPhotos[cat]) openCarousel(cat); else alert("Sem fotos."); }); });
 
-        // ========== FUNÇÕES DE AGENDAMENTO (FIREBASE) ==========
-        async function addAppointmentToFirebase(dateObj, hour, serviceName, servicePrice, clientName) {
-            const year = dateObj.fullDate.getFullYear();
-            const month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0');
-            const day = dateObj.fullDate.getDate().toString().padStart(2, '0');
-            const dateKey = `${year}-${month}-${day}`;
-            const dateDisplay = dateObj.display;
-            const id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
-            const newApp = {
-                id,
-                dateKey,
-                hour,
-                dateDisplay,
-                serviceName,
-                servicePrice,
-                clientName,
-                timestamp: Date.now()
-            };
-            const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
-            let exists = false;
+        // ========== FUNÇÕES DE AGENDAMENTO CORRIGIDAS ==========
+        
+        // Variável global para armazenar os horários indisponíveis (cache)
+        let unavailableSlotsSet = new Set();
+        
+        // Função para carregar todos os horários indisponíveis do Firebase
+        async function loadUnavailableSlots() {
+            const snapshot = await unavailableRef.once("value");
+            const newSet = new Set();
             snapshot.forEach(child => {
-                if (child.val().hour === hour) exists = true;
+                newSet.add(child.val());
             });
-            if (exists) return false;
-            await appointmentsRef.child(id).set(newApp);
+            unavailableSlotsSet = newSet;
+            console.log("Horários indisponíveis carregados:", Array.from(unavailableSlotsSet));
+            return unavailableSlotsSet;
+        }
+        
+        async function addPendingAppointment(dateObj, hour, serviceName, servicePrice, clientName) {
+            const year = dateObj.fullDate.getFullYear(), month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), day = dateObj.fullDate.getDate().toString().padStart(2, '0');
+            const dateKey = `${year}-${month}-${day}`, dateDisplay = dateObj.display, id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            const newPending = { id, dateKey, hour, dateDisplay, serviceName, servicePrice, clientName, timestamp: Date.now() };
+            await pendingRef.child(id).set(newPending);
             return true;
         }
-
-        async function deleteAppointmentFromFirebase(id) {
-            await appointmentsRef.child(id).remove();
+        
+        async function deletePending(id) { 
+            await pendingRef.child(id).remove(); 
         }
-
-        async function deleteAllAppointmentsFromFirebase() {
-            await appointmentsRef.remove();
+        
+        async function deleteConfirmed(id) { 
+            await appointmentsRef.child(id).remove(); 
         }
-
+        
+        async function confirmAppointment(pendingId, appData) {
+            const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(appData.dateKey).once("value");
+            let alreadyConfirmed = false;
+            
+            snapshot.forEach(child => { 
+                if (child.val().hour === appData.hour) {
+                    alreadyConfirmed = true;
+                }
+            });
+            
+            if (alreadyConfirmed) { 
+                alert(`⚠️ Este horário (${appData.hour}) já foi confirmado para outro cliente.`);
+                return false; 
+            }
+            
+            const newConfirmedId = Date.now() + '-' + Math.random().toString(36).substr(2, 8);
+            
+            const newApp = { 
+                originalPendingId: pendingId,
+                dateKey: appData.dateKey,
+                hour: appData.hour,
+                dateDisplay: appData.dateDisplay,
+                serviceName: appData.serviceName,
+                servicePrice: appData.servicePrice,
+                clientName: appData.clientName,
+                confirmedAt: Date.now(),
+                timestamp: appData.timestamp || Date.now()
+            };
+            
+            await appointmentsRef.child(newConfirmedId).set(newApp);
+            await deletePending(pendingId);
+            
+            // Recarregar os horários indisponíveis para manter o cache atualizado
+            await loadUnavailableSlots();
+            
+            return true;
+        }
+        
+        // FUNÇÃO CORRIGIDA - isSlotBlockedFirebase (agora verifica TODOS os horários indisponíveis)
         async function isSlotBlockedFirebase(dateObj, hour) {
-            const year = dateObj.fullDate.getFullYear();
-            const month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0');
-            const day = dateObj.fullDate.getDate().toString().padStart(2, '0');
+            const year = dateObj.fullDate.getFullYear(), month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), day = dateObj.fullDate.getDate().toString().padStart(2, '0');
             const dateKey = `${year}-${month}-${day}`;
+            
+            // Verificar se o horário já foi confirmado
             const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
             let blocked = false;
-            snapshot.forEach(child => {
-                if (child.val().hour === hour) blocked = true;
+            snapshot.forEach(child => { 
+                if (child.val().hour === hour) blocked = true; 
             });
+            
+            // Verificar se o horário está na lista de indisponíveis (usando o cache ou carregando novamente)
+            const slotKey = `${dateKey}|${hour}`;
+            if (unavailableSlotsSet.has(slotKey)) {
+                blocked = true;
+            }
+            
             return blocked;
         }
 
-        async function renderAppointmentsList() {
-            const container = document.getElementById('appointmentsList');
+        // ========== RENDERIZAÇÃO DAS LISTAS ADMIN ==========
+        
+        function escapeHtml(str) { 
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); 
+        }
+        
+        async function renderPendingList() {
+            const container = document.getElementById('pendingList');
+            if (!container) return;
+            
+            const snapshot = await pendingRef.once("value");
+            const pendings = [];
+            snapshot.forEach(child => pendings.push({ id: child.key, ...child.val() }));
+            
+            if (pendings.length === 0) { 
+                container.innerHTML = '<div class="empty-list">📭 Nenhuma solicitação pendente.</div>'; 
+                return; 
+            }
+            
+            pendings.sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
+            container.innerHTML = '';
+            
+            pendings.forEach(p => {
+                const div = document.createElement('div'); 
+                div.className = 'appointment-item';
+                div.innerHTML = `
+                    <div style="flex:1">
+                        <strong style="color:var(--yellow);">${escapeHtml(p.clientName)}</strong><br>
+                        📅 ${p.dateDisplay} ⏰ ${p.hour}<br>
+                        ✂️ ${p.serviceName} - R$ ${p.servicePrice}
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button class="approve-appointment" data-id="${p.id}">✅ Confirmar</button>
+                        <button class="delete-appointment" data-id="${p.id}">❌ Recusar</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            document.querySelectorAll('#pendingList .approve-appointment').forEach(btn => {
+                btn.removeEventListener('click', handleApprove);
+                btn.addEventListener('click', handleApprove);
+            });
+            
+            document.querySelectorAll('#pendingList .delete-appointment').forEach(btn => {
+                btn.removeEventListener('click', handleDeletePending);
+                btn.addEventListener('click', handleDeletePending);
+            });
+        }
+        
+        async function handleApprove(e) {
+            const btn = e.currentTarget;
+            const id = btn.getAttribute('data-id');
+            
+            const snapshot = await pendingRef.child(id).once('value');
+            const appData = snapshot.val();
+            
+            if (!appData) {
+                alert("Agendamento não encontrado!");
+                await renderPendingList();
+                return;
+            }
+            
+            if (await confirmAppointment(id, appData)) {
+                alert("✅ Agendamento confirmado com sucesso!");
+                await renderPendingList();
+                await renderConfirmedList();
+                
+                if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
+                    await renderHoursWithBlocked(selectedDate);
+                }
+            } else {
+                await renderPendingList();
+            }
+        }
+        
+        async function handleDeletePending(e) {
+            const btn = e.currentTarget;
+            const id = btn.getAttribute('data-id');
+            if (confirm("❌ Excluir esta solicitação pendente?")) { 
+                await deletePending(id); 
+                await renderPendingList();
+            }
+        }
+        
+        async function renderConfirmedList() {
+            const container = document.getElementById('confirmedList');
+            if (!container) return;
+            
             const snapshot = await appointmentsRef.once("value");
             const apps = [];
             snapshot.forEach(child => {
-                apps.push(child.val());
-            });
-            if (apps.length === 0) {
-                container.innerHTML = '<div class="empty-list">Nenhum agendamento.</div>';
-                return;
-            }
-            apps.sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
-            container.innerHTML = '';
-            apps.forEach(app => {
-                const div = document.createElement('div');
-                div.className = 'appointment-item';
-                div.innerHTML = `<div><strong>${escapeHtml(app.clientName)}</strong><br>📅 ${app.dateDisplay} ⏰ ${app.hour}<br>✂️ ${app.serviceName} - R$ ${app.servicePrice}</div><button class="delete-appointment" data-id="${app.id}">Excluir</button>`;
-                container.appendChild(div);
-            });
-            document.querySelectorAll('.delete-appointment').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = btn.getAttribute('data-id');
-                    if (confirm("Excluir?")) {
-                        await deleteAppointmentFromFirebase(id);
-                        renderAppointmentsList();
-                        if (bookingModal.classList.contains('active') && stepHourDiv.style.display === 'block' && selectedDate) {
-                            renderHoursWithBlocked(selectedDate);
-                        }
-                    }
+                const appData = child.val();
+                apps.push({ 
+                    id: child.key,
+                    clientName: appData.clientName,
+                    dateDisplay: appData.dateDisplay,
+                    hour: appData.hour,
+                    serviceName: appData.serviceName,
+                    servicePrice: appData.servicePrice,
+                    dateKey: appData.dateKey,
+                    confirmedAt: appData.confirmedAt,
+                    timestamp: appData.timestamp
                 });
             });
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/[&<>]/g, function (m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
+            
+            if (apps.length === 0) {
+                container.innerHTML = '<div class="empty-list">📅 Nenhum agendamento confirmado.</div>';
+                return;
+            }
+            
+            apps.sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
+            container.innerHTML = '';
+            
+            for (const app of apps) {
+                const div = document.createElement('div');
+                div.className = 'appointment-item';
+                div.innerHTML = `
+                    <div style="flex:1">
+                        <strong style="color:var(--yellow);">${escapeHtml(app.clientName)}</strong><br>
+                        📅 ${app.dateDisplay} ⏰ ${app.hour}<br>
+                        ✂️ ${app.serviceName} - R$ ${app.servicePrice}
+                    </div>
+                    <button class="delete-confirmed" data-id="${app.id}" style="background:#aa2e2e;color:white;border:none;padding:8px 18px;border-radius:40px;cursor:pointer;">🗑️ Excluir</button>
+                `;
+                container.appendChild(div);
+            }
+            
+            document.querySelectorAll('#confirmedList .delete-confirmed').forEach(btn => {
+                btn.removeEventListener('click', handleDeleteConfirmed);
+                btn.addEventListener('click', handleDeleteConfirmed);
             });
         }
+        
+        async function handleDeleteConfirmed(e) {
+            const btn = e.currentTarget;
+            const id = btn.getAttribute('data-id');
+            if (!id) return;
+            
+            if (confirm("⚠️ Excluir este agendamento confirmado? O horário ficará livre novamente.")) {
+                await deleteConfirmed(id);
+                await renderConfirmedList();
+                await loadUnavailableSlots(); // Recarregar indisponíveis
+                
+                if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
+                    await renderHoursWithBlocked(selectedDate);
+                }
+            }
+        }
+        
+        async function renderUnavailableGrid() {
+            const container = document.getElementById('unavailableGridContainer');
+            if (!container) return;
+            container.innerHTML = '<div class="loading-indicator">Carregando...</div>';
+            
+            // Recarregar a lista de indisponíveis
+            await loadUnavailableSlots();
+            
+            const futureDates = [];
+            let offset = 0, daysAdded = 0;
+            const weekDaysShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            while (daysAdded < 30) {
+                let candidate = new Date(); candidate.setDate(new Date().getDate() + offset);
+                const dow = candidate.getDay();
+                if (dow >= 1 && dow <= 5) {
+                    futureDates.push({
+                        fullDate: new Date(candidate),
+                        display: `${weekDaysShort[candidate.getDay()]}, ${candidate.getDate().toString().padStart(2, '0')}/${(candidate.getMonth() + 1).toString().padStart(2, '0')}`,
+                        dateKey: `${candidate.getFullYear()}-${(candidate.getMonth() + 1).toString().padStart(2, '0')}-${candidate.getDate().toString().padStart(2, '0')}`
+                    });
+                    daysAdded++;
+                }
+                offset++;
+            }
+            
+            container.innerHTML = '';
+            for (const date of futureDates) {
+                const availableHours = getAvailableHoursForDate(date.fullDate);
+                if (availableHours.length === 0) continue;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'unavailable-date-group';
+                dateDiv.innerHTML = `
+                    <div class="unavailable-date-title">
+                        <span>📅 ${date.display}</span>
+                        <div class="date-actions">
+                            <button class="select-all" data-datekey="${date.dateKey}">✅ Selecionar todos</button>
+                            <button class="unselect-all" data-datekey="${date.dateKey}">❌ Desmarcar todos</button>
+                            <button class="apply-unavailable" data-datekey="${date.dateKey}">🚫 Aplicar indisponíveis</button>
+                            <button class="apply-available" data-datekey="${date.dateKey}">🔓 Aplicar disponíveis</button>
+                        </div>
+                    </div>
+                    <div class="unavailable-hours" id="hours-${date.dateKey}"></div>
+                `;
+                container.appendChild(dateDiv);
+                const hoursContainer = dateDiv.querySelector(`.unavailable-hours`);
+                const hourElements = [];
+                for (const hour of availableHours) {
+                    const slotKey = `${date.dateKey}|${hour}`;
+                    const isUnavailable = unavailableSlotsSet.has(slotKey);
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = `unavailable-hour-item ${isUnavailable ? 'unavailable' : 'available'}`;
+                    itemDiv.innerHTML = `<input type="checkbox" class="hour-checkbox" data-slotkey="${slotKey}" ${isUnavailable ? 'checked' : ''}><label>${hour}</label>`;
+                    hoursContainer.appendChild(itemDiv);
+                    hourElements.push(itemDiv);
+                }
+                const selectAllBtn = dateDiv.querySelector('.select-all');
+                const unselectAllBtn = dateDiv.querySelector('.unselect-all');
+                const applyUnavailableBtn = dateDiv.querySelector('.apply-unavailable');
+                const applyAvailableBtn = dateDiv.querySelector('.apply-available');
+                selectAllBtn.addEventListener('click', () => hourElements.forEach(el => el.querySelector('input').checked = true));
+                unselectAllBtn.addEventListener('click', () => hourElements.forEach(el => el.querySelector('input').checked = false));
+                applyUnavailableBtn.addEventListener('click', async () => {
+                    const selectedSlots = [];
+                    hourElements.forEach(el => { if (el.querySelector('input').checked) selectedSlots.push(el.querySelector('input').dataset.slotkey); });
+                    if (selectedSlots.length === 0) return;
+                    for (const slotKey of selectedSlots) {
+                        await unavailableRef.child(slotKey.replace(/\|/g, '_')).set(slotKey);
+                        unavailableSlotsSet.add(slotKey);
+                        const item = hourElements.find(el => el.querySelector('input').dataset.slotkey === slotKey);
+                        if (item) { item.classList.remove('available'); item.classList.add('unavailable'); item.querySelector('input').checked = true; }
+                    }
+                    alert(`${selectedSlots.length} horário(s) marcado(s) como indisponível.`);
+                    // Recarregar os horários no modal de agendamento se estiver aberto
+                    if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
+                        await renderHoursWithBlocked(selectedDate);
+                    }
+                });
+                applyAvailableBtn.addEventListener('click', async () => {
+                    const selectedSlots = [];
+                    hourElements.forEach(el => { if (el.querySelector('input').checked) selectedSlots.push(el.querySelector('input').dataset.slotkey); });
+                    if (selectedSlots.length === 0) return;
+                    for (const slotKey of selectedSlots) {
+                        await unavailableRef.child(slotKey.replace(/\|/g, '_')).remove();
+                        unavailableSlotsSet.delete(slotKey);
+                        const item = hourElements.find(el => el.querySelector('input').dataset.slotkey === slotKey);
+                        if (item) { item.classList.remove('unavailable'); item.classList.add('available'); item.querySelector('input').checked = false; }
+                    }
+                    alert(`${selectedSlots.length} horário(s) marcado(s) como disponível.`);
+                    // Recarregar os horários no modal de agendamento se estiver aberto
+                    if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
+                        await renderHoursWithBlocked(selectedDate);
+                    }
+                });
+            }
+        }
 
-        // ========== HORÁRIOS E DATAS (AGORA COM O DIA ATUAL) ==========
+        // ========== HORÁRIOS E DATAS PARA O CLIENTE ==========
         function getAvailableHoursForDate(date) {
             const dayOfWeek = date.getDay();
-            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-                return ["10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
-            }
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) return ["10:00", "11:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
             return [];
         }
 
-        const today = new Date();
-        const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const today = new Date(), weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
         let availableDates = [];
-        let daysAdded = 0;
-        let offset = 0; // começa do dia atual
+        let offset = 0, daysAdded = 0;
         while (daysAdded < 10) {
-            let candidateDate = new Date();
-            candidateDate.setDate(today.getDate() + offset);
+            let candidateDate = new Date(); candidateDate.setDate(today.getDate() + offset);
             const dayOfWeek = candidateDate.getDay();
-            if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Segunda a Sexta
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
                 let dayStr = `${candidateDate.getDate().toString().padStart(2, '0')}/${(candidateDate.getMonth() + 1).toString().padStart(2, '0')}`;
-                availableDates.push({
-                    fullDate: new Date(candidateDate),
-                    display: `${weekDays[candidateDate.getDay()]}, ${dayStr}`,
-                    value: `${candidateDate.getFullYear()}-${candidateDate.getMonth() + 1}-${candidateDate.getDate()}`
-                });
+                availableDates.push({ fullDate: new Date(candidateDate), display: `${weekDays[candidateDate.getDay()]}, ${dayStr}`, value: `${candidateDate.getFullYear()}-${candidateDate.getMonth() + 1}-${candidateDate.getDate()}` });
                 daysAdded++;
             }
             offset++;
@@ -1366,95 +1539,58 @@
         let selectedDate = null, selectedHour = null, selectedService = null, preSelectedService = null;
 
         function renderDates() {
-            const cont = document.getElementById('datesContainer');
-            cont.innerHTML = '';
+            const cont = document.getElementById('datesContainer'); cont.innerHTML = '';
             availableDates.forEach(date => {
-                const btn = document.createElement('div');
-                btn.classList.add('date-btn');
-                btn.textContent = date.display;
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    selectedDate = date;
-                    document.getElementById('nextToHours').disabled = false;
-                });
+                const btn = document.createElement('div'); btn.classList.add('date-btn'); btn.textContent = date.display;
+                btn.addEventListener('click', () => { document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected')); btn.classList.add('selected'); selectedDate = date; document.getElementById('nextToHours').disabled = false; });
                 cont.appendChild(btn);
             });
         }
 
         async function renderHoursWithBlocked(date) {
-            const cont = document.getElementById('hoursContainer');
-            cont.innerHTML = '';
+            const cont = document.getElementById('hoursContainer'); cont.innerHTML = '';
             const availableHours = getAvailableHoursForDate(date.fullDate);
-            if (availableHours.length === 0) {
-                const msg = document.createElement('div');
-                msg.textContent = "Nenhum horário disponível para este dia.";
-                msg.style.textAlign = "center";
-                msg.style.padding = "20px";
-                msg.style.color = "#ff8888";
-                cont.appendChild(msg);
-                document.getElementById('nextToServiceOrName').disabled = true;
-                return;
-            }
-
+            if (availableHours.length === 0) { cont.innerHTML = '<div style="text-align:center;padding:20px;color:#ff8888;">Nenhum horário disponível.</div>'; document.getElementById('nextToServiceOrName').disabled = true; return; }
             const now = new Date();
             const isToday = date.fullDate.toDateString() === now.toDateString();
-
             let hasAvailable = false;
+            
+            // Carregar indisponíveis atualizados
+            await loadUnavailableSlots();
+            
             for (const hour of availableHours) {
-                // Se for hoje, verificar se o horário já passou
                 if (isToday) {
                     const [hourNum, minuteNum] = hour.split(':').map(Number);
-                    const appointmentTime = new Date(now);
-                    appointmentTime.setHours(hourNum, minuteNum, 0, 0);
-                    if (appointmentTime < now) continue; // horário já passado, não exibe
+                    const appointmentTime = new Date(now); appointmentTime.setHours(hourNum, minuteNum, 0, 0);
+                    if (appointmentTime < now) continue;
                 }
-
                 const blocked = await isSlotBlockedFirebase(date, hour);
-                const btn = document.createElement('div');
-                btn.classList.add('hour-btn');
-                if (blocked) {
-                    btn.classList.add('blocked');
-                    btn.textContent = `${hour} ❌`;
-                    btn.style.cursor = 'not-allowed';
-                } else {
-                    btn.textContent = hour;
-                    btn.addEventListener('click', () => {
-                        if (btn.classList.contains('blocked')) return;
-                        document.querySelectorAll('.hour-btn').forEach(el => el.classList.remove('selected'));
-                        btn.classList.add('selected');
-                        selectedHour = hour;
-                        document.getElementById('nextToServiceOrName').disabled = false;
-                    });
-                    hasAvailable = true;
+                const btn = document.createElement('div'); btn.classList.add('hour-btn');
+                if (blocked) { 
+                    btn.classList.add('blocked'); 
+                    btn.textContent = `${hour} ❌`; 
+                    btn.style.cursor = 'not-allowed'; 
+                } else { 
+                    btn.textContent = hour; 
+                    btn.addEventListener('click', () => { 
+                        if (btn.classList.contains('blocked')) return; 
+                        document.querySelectorAll('.hour-btn').forEach(el => el.classList.remove('selected')); 
+                        btn.classList.add('selected'); 
+                        selectedHour = hour; 
+                        document.getElementById('nextToServiceOrName').disabled = false; 
+                    }); 
+                    hasAvailable = true; 
                 }
                 cont.appendChild(btn);
             }
-
-            if (!hasAvailable) {
-                const msg = document.createElement('div');
-                msg.textContent = "Nenhum horário disponível para hoje (horários já passados ou todos ocupados).";
-                msg.style.textAlign = "center";
-                msg.style.padding = "20px";
-                msg.style.color = "#ff8888";
-                cont.appendChild(msg);
-                document.getElementById('nextToServiceOrName').disabled = true;
-            }
+            if (!hasAvailable) cont.innerHTML = '<div style="text-align:center;padding:20px;color:#ff8888;">Nenhum horário disponível (todos passaram, ocupados ou indisponíveis).</div>';
         }
 
         function renderServices() {
-            const cont = document.getElementById('servicesContainer');
-            cont.innerHTML = '';
+            const cont = document.getElementById('servicesContainer'); cont.innerHTML = '';
             serviceList.forEach(service => {
-                const btn = document.createElement('div');
-                btn.classList.add('service-btn');
-                btn.textContent = `${service.name} - R$ ${service.price}`;
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.service-btn').forEach(el => el.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    selectedService = service;
-                    document.getElementById('nextToNameFromService').disabled = false;
-                });
+                const btn = document.createElement('div'); btn.classList.add('service-btn'); btn.textContent = `${service.name} - R$ ${service.price}`;
+                btn.addEventListener('click', () => { document.querySelectorAll('.service-btn').forEach(el => el.classList.remove('selected')); btn.classList.add('selected'); selectedService = service; document.getElementById('nextToNameFromService').disabled = false; });
                 cont.appendChild(btn);
             });
         }
@@ -1466,183 +1602,108 @@
         const confirmBtn = document.getElementById('confirmBooking'), clientNameInput = document.getElementById('clientName'), nameErrorDiv = document.getElementById('nameError');
         let flowHasServiceSelection = true;
 
-        function showStep(step) {
-            stepDateDiv.style.display = 'none';
-            stepHourDiv.style.display = 'none';
-            stepServiceDiv.style.display = 'none';
-            stepNameDiv.style.display = 'none';
-            if (step === 'date') stepDateDiv.style.display = 'block';
-            if (step === 'hour') stepHourDiv.style.display = 'block';
-            if (step === 'service') stepServiceDiv.style.display = 'block';
-            if (step === 'name') stepNameDiv.style.display = 'block';
-        }
+        function showStep(step) { stepDateDiv.style.display = 'none'; stepHourDiv.style.display = 'none'; stepServiceDiv.style.display = 'none'; stepNameDiv.style.display = 'none'; if (step === 'date') stepDateDiv.style.display = 'block'; if (step === 'hour') stepHourDiv.style.display = 'block'; if (step === 'service') stepServiceDiv.style.display = 'block'; if (step === 'name') stepNameDiv.style.display = 'block'; }
+        function resetBooking() { selectedDate = null; selectedHour = null; selectedService = null; preSelectedService = null; document.getElementById('nextToHours').disabled = true; document.getElementById('nextToServiceOrName').disabled = true; if (nextToNameFromService) nextToNameFromService.disabled = true; showStep('date'); document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected')); }
 
-        function resetBooking() {
-            selectedDate = null;
-            selectedHour = null;
-            selectedService = null;
-            preSelectedService = null;
-            document.getElementById('nextToHours').disabled = true;
-            document.getElementById('nextToServiceOrName').disabled = true;
-            if (nextToNameFromService) nextToNameFromService.disabled = true;
-            showStep('date');
-            document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected'));
-        }
-
-        nextToHoursBtn.addEventListener('click', async () => {
-            if (selectedDate) {
-                await renderHoursWithBlocked(selectedDate);
-                showStep('hour');
-                selectedHour = null;
-                document.getElementById('nextToServiceOrName').disabled = true;
-            }
-        });
+        nextToHoursBtn.addEventListener('click', async () => { if (selectedDate) { await renderHoursWithBlocked(selectedDate); showStep('hour'); selectedHour = null; document.getElementById('nextToServiceOrName').disabled = true; } });
         backToDateBtn.addEventListener('click', () => showStep('date'));
         nextToServiceOrNameBtn.addEventListener('click', async () => {
             if (selectedHour && !(await isSlotBlockedFirebase(selectedDate, selectedHour))) {
-                if (flowHasServiceSelection && !preSelectedService) {
-                    renderServices();
-                    showStep('service');
-                    selectedService = null;
-                    if (nextToNameFromService) nextToNameFromService.disabled = true;
-                } else {
-                    if (preSelectedService) selectedService = preSelectedService;
-                    showStep('name');
-                    clientNameInput.value = '';
-                    nameErrorDiv.innerText = '';
-                }
-            } else if (selectedHour && (await isSlotBlockedFirebase(selectedDate, selectedHour))) {
-                alert("Horário não disponível.");
-                await renderHoursWithBlocked(selectedDate);
-                selectedHour = null;
-                document.getElementById('nextToServiceOrName').disabled = true;
-            }
+                if (flowHasServiceSelection && !preSelectedService) { renderServices(); showStep('service'); selectedService = null; if (nextToNameFromService) nextToNameFromService.disabled = true; }
+                else { if (preSelectedService) selectedService = preSelectedService; showStep('name'); clientNameInput.value = ''; nameErrorDiv.innerText = ''; }
+            } else if (selectedHour && (await isSlotBlockedFirebase(selectedDate, selectedHour))) { alert("Horário não disponível."); await renderHoursWithBlocked(selectedDate); selectedHour = null; document.getElementById('nextToServiceOrName').disabled = true; }
         });
         if (backToHourFromService) backToHourFromService.addEventListener('click', () => showStep('hour'));
-        if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => {
-            if (selectedService) {
-                showStep('name');
-                clientNameInput.value = '';
-                nameErrorDiv.innerText = '';
-            }
-        });
-        backToPrevStepBtn.addEventListener('click', () => {
-            if (flowHasServiceSelection && !preSelectedService) showStep('service');
-            else showStep('hour');
-        });
+        if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => { if (selectedService) { showStep('name'); clientNameInput.value = ''; nameErrorDiv.innerText = ''; } });
+        backToPrevStepBtn.addEventListener('click', () => { if (flowHasServiceSelection && !preSelectedService) showStep('service'); else showStep('hour'); });
+
         confirmBtn.addEventListener('click', async () => {
             const nome = clientNameInput.value.trim();
-            if (nome === "") {
-                nameErrorDiv.innerText = "Digite seu nome completo.";
-                return;
-            }
-            if (nome.length < 3) {
-                nameErrorDiv.innerText = "Nome muito curto.";
-                return;
-            }
-            if (await isSlotBlockedFirebase(selectedDate, selectedHour)) {
-                alert("Horário não disponível.");
-                closeBookingModal();
-                resetBooking();
-                return;
-            }
-            const success = await addAppointmentToFirebase(selectedDate, selectedHour, selectedService.name, selectedService.price, nome);
-            if (!success) {
-                alert("Horário já ocupado.");
-                closeBookingModal();
-                resetBooking();
-                return;
-            }
-            const msg = `*NOVO AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardamos você!%0A%0A⚠️ ATENÇÃO: O agendamento será confirmado somente após o envio do comprovante de pagamento via PIX.`;
+            if (nome === "") { nameErrorDiv.innerText = "Digite seu nome completo."; return; }
+            if (nome.length < 3) { nameErrorDiv.innerText = "Nome muito curto."; return; }
+            if (await isSlotBlockedFirebase(selectedDate, selectedHour)) { alert("Horário não disponível."); closeBookingModal(); resetBooking(); return; }
+            const success = await addPendingAppointment(selectedDate, selectedHour, selectedService.name, selectedService.price, nome);
+            if (!success) { alert("Erro ao solicitar agendamento."); closeBookingModal(); resetBooking(); return; }
+            const msg = `*NOVA SOLICITAÇÃO DE AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardando confirmação mediante envio do comprovante de pagamento.`;
             closeBookingModal();
             window.open(`https://wa.me/5591984006046?text=${msg}`, '_blank');
-            alert("✅ Agendamento solicitado! Envie o comprovante do PIX para confirmar.");
+            alert("✅ Solicitação enviada! O agendamento só será confirmado após o envio do comprovante de pagamento via WhatsApp.");
             resetBooking();
         });
 
         const bookingModal = document.getElementById('bookingModal'), closeModalBtn = document.getElementById('closeModalBtn');
         function openBookingModal(preselect = false, serviceName = null, servicePrice = null) {
-            resetBooking();
-            flowHasServiceSelection = !preselect;
-            if (preselect && serviceName && servicePrice) {
-                preSelectedService = { name: serviceName, price: servicePrice };
-                selectedService = preSelectedService;
-            } else {
-                preSelectedService = null;
-                selectedService = null;
-            }
-            renderDates();
-            showStep('date');
-            bookingModal.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            resetBooking(); flowHasServiceSelection = !preselect;
+            if (preselect && serviceName && servicePrice) { preSelectedService = { name: serviceName, price: servicePrice }; selectedService = preSelectedService; }
+            else { preSelectedService = null; selectedService = null; }
+            renderDates(); showStep('date'); bookingModal.classList.add('active'); document.body.style.overflow = 'hidden';
         }
-        function closeBookingModal() {
-            bookingModal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
+        function closeBookingModal() { bookingModal.classList.remove('active'); document.body.style.overflow = ''; }
         document.querySelectorAll('.open-modal-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const preselect = btn.getAttribute('data-preselect-service') === 'true';
-                const sName = btn.getAttribute('data-service-name');
-                const sPrice = btn.getAttribute('data-service-price');
-                if (preselect && sName && sPrice) openBookingModal(true, sName, parseInt(sPrice));
-                else openBookingModal(false);
-            });
+            btn.addEventListener('click', (e) => { const preselect = btn.getAttribute('data-preselect-service') === 'true'; const sName = btn.getAttribute('data-service-name'); const sPrice = btn.getAttribute('data-service-price'); if (preselect && sName && sPrice) openBookingModal(true, sName, parseInt(sPrice)); else openBookingModal(false); });
         });
         closeModalBtn.addEventListener('click', closeBookingModal);
         bookingModal.addEventListener('click', (e) => { if (e.target === bookingModal) closeBookingModal(); });
 
         // Admin
         const adminLoginModal = document.getElementById('adminLoginModal'), adminListModal = document.getElementById('adminListModal'), adminLink = document.getElementById('adminLink');
-        const closeAdminLoginBtn = document.getElementById('closeAdminLoginBtn'), closeAdminListBtn = document.getElementById('closeAdminListBtn'), doLoginBtn = document.getElementById('doLoginBtn'), refreshBtn = document.getElementById('refreshAppointmentsBtn');
+        const closeAdminLoginBtn = document.getElementById('closeAdminLoginBtn'), closeAdminListBtn = document.getElementById('closeAdminListBtn'), doLoginBtn = document.getElementById('doLoginBtn'), refreshAdminBtn = document.getElementById('refreshAdminBtn');
         function openAdminLogin() { adminLoginModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeAdminLogin() { adminLoginModal.classList.remove('active'); document.body.style.overflow = ''; document.getElementById('loginError').innerText = ''; }
-        function openAdminList() { renderAppointmentsList(); adminListModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        async function openAdminList() { 
+            await loadUnavailableSlots(); // Carregar indisponíveis antes de abrir
+            await renderPendingList(); 
+            await renderConfirmedList(); 
+            await renderUnavailableGrid(); 
+            adminListModal.classList.add('active'); 
+            document.body.style.overflow = 'hidden'; 
+        }
         function closeAdminList() { adminListModal.classList.remove('active'); document.body.style.overflow = ''; }
         adminLink.addEventListener('click', (e) => { e.preventDefault(); openAdminLogin(); });
-        closeAdminLoginBtn.addEventListener('click', closeAdminLogin); closeAdminListBtn.addEventListener('click', closeAdminList); refreshBtn.addEventListener('click', () => renderAppointmentsList());
+        closeAdminLoginBtn.addEventListener('click', closeAdminLogin); 
+        closeAdminListBtn.addEventListener('click', closeAdminList); 
+        refreshAdminBtn.addEventListener('click', async () => { 
+            await loadUnavailableSlots();
+            await renderPendingList(); 
+            await renderConfirmedList(); 
+            await renderUnavailableGrid(); 
+        });
         doLoginBtn.addEventListener('click', () => { const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value; if (u === 'Hgbarbeiro' && p === 'Hgdocorte') { closeAdminLogin(); openAdminList(); document.getElementById('adminUser').value = ''; document.getElementById('adminPass').value = ''; } else { document.getElementById('loginError').innerText = 'Usuário ou senha inválidos.'; } });
 
-        // Menu Hambúrguer
-        const menuToggle = document.getElementById('menuToggle');
-        const navLinksMenu = document.getElementById('navLinks');
-        const overlayMenu = document.getElementById('overlay');
-        function closeNav() {
-            navLinksMenu.classList.remove('active');
-            overlayMenu.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-        function openNav() {
-            navLinksMenu.classList.add('active');
-            overlayMenu.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-        if (menuToggle && navLinksMenu && overlayMenu) {
-            menuToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (navLinksMenu.classList.contains('active')) closeNav();
-                else openNav();
+        // Abas no admin
+        const tabs = document.querySelectorAll('.admin-tab');
+        const pendingTabDiv = document.getElementById('pendingTab'), confirmedTabDiv = document.getElementById('confirmedTab'), unavailableTabDiv = document.getElementById('unavailableTab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const target = tab.getAttribute('data-tab');
+                pendingTabDiv.classList.remove('active'); confirmedTabDiv.classList.remove('active'); unavailableTabDiv.classList.remove('active');
+                if (target === 'pending') pendingTabDiv.classList.add('active');
+                else if (target === 'confirmed') confirmedTabDiv.classList.add('active');
+                else if (target === 'unavailable') unavailableTabDiv.classList.add('active');
             });
+        });
+
+        // Menu Hambúrguer
+        const menuToggle = document.getElementById('menuToggle'), navLinksMenu = document.getElementById('navLinks'), overlayMenu = document.getElementById('overlay');
+        function closeNav() { navLinksMenu.classList.remove('active'); overlayMenu.classList.remove('active'); document.body.style.overflow = ''; }
+        function openNav() { navLinksMenu.classList.add('active'); overlayMenu.classList.add('active'); document.body.style.overflow = 'hidden'; }
+        if (menuToggle && navLinksMenu && overlayMenu) {
+            menuToggle.addEventListener('click', (e) => { e.stopPropagation(); if (navLinksMenu.classList.contains('active')) closeNav(); else openNav(); });
             overlayMenu.addEventListener('click', closeNav);
             document.querySelectorAll('.nav-links a').forEach(link => link.addEventListener('click', closeNav));
         }
         document.querySelectorAll('a[href^="#"]:not(#adminLink)').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                const t = document.querySelector(this.getAttribute('href'));
-                if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
-            });
+            anchor.addEventListener('click', function (e) { const t = document.querySelector(this.getAttribute('href')); if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); } });
         });
 
         // Botão copiar chave PIX
         const copyBtn = document.getElementById('copyPixKeyBtn');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => {
-                const pixKey = document.getElementById('pixKeyValue').innerText;
-                navigator.clipboard.writeText(pixKey).then(() => {
-                    alert("Chave PIX copiada para a área de transferência!");
-                }).catch(() => alert("Não foi possível copiar. Copie manualmente."));
-            });
-        }
+        if (copyBtn) { copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('pixKeyValue').innerText).then(() => alert("Chave PIX copiada!")).catch(() => alert("Erro ao copiar.")); }); }
+        
+        // Carregar indisponíveis ao iniciar
+        loadUnavailableSlots();
     </script>
 </body>
 
