@@ -961,7 +961,7 @@
                         <div class="service-icon"><i class="fas fa-star"></i></div>
                         <h3>Combo Hg</h3>
                         <p>Corte + Barba + Sobrancelha.</p>
-                        <div class="price">R$ 60</div>
+                        <div class="price">R$ 50</div>
                         <button class="btn open-modal-btn" data-preselect-service="true" data-service-name="Combo Hg"
                             data-service-price="60"><i class="fas fa-clock"></i> Agendar</button>
                     </div>
@@ -1016,7 +1016,7 @@
                         <div class="info-detail"><i class="fas fa-map-pin"></i><span>Passagem Samaritana, Marambaia, Belém PA</span></div>
                         <div class="info-detail"><i class="fas fa-phone-alt"></i><span>(91) 98400-6046</span></div>
                         <div class="info-detail"><i class="fab fa-whatsapp"></i><span>(91) 98400-6046</span></div>
-                        <div class="info-detail"><i class="fas fa-envelope"></i><span>hugokauanmiranda11@gmail.com</span></div>
+                        <div class="info-detail"><i class="fas fa-envelope"></i><span>hugokauamiranda11@gmail.com</span></div>
                         <div class="social-links">
                             <a href="https://www.instagram.com/hgdocorte_/" target="_blank"><i class="fab fa-instagram"></i></a>
                             <a href="https://wa.me/5591984006046" target="_blank"><i class="fab fa-whatsapp"></i></a>
@@ -1141,12 +1141,20 @@
         const pendingRef = database.ref("pending_appointments");
         const unavailableRef = database.ref("unavailable_slots");
 
-        // ========== LISTA DE SERVIÇOS ==========
+        // ========== LISTA DE SERVIÇOS ATUALIZADA ==========
         const serviceList = [
-            { name: "Barba", price: 20 }, { name: "Degrade", price: 30 }, { name: "Social", price: 20 },
-            { name: "Corte + pigmentação", price: 55 }, { name: "Nevou", price: 110 }, { name: "Selagem", price: 100 },
-            { name: "Luzes", price: 100 }, { name: "Reflexo", price: 100 }, { name: "Corte todo na tesoura", price: 30 },
-            { name: "Corte + barba", price: 50 }
+            { name: "Barba", price: 20 }, 
+            { name: "Degrade", price: 30 }, 
+            { name: "Social", price: 20 },
+            { name: "Corte + pigmentação", price: 55 }, 
+            { name: "Nevou", price: 110 }, 
+            { name: "Selagem", price: 100 },
+            { name: "Luzes", price: 100 }, 
+            { name: "Reflexo", price: 100 }, 
+            { name: "Corte todo na tesoura", price: 30 },
+            { name: "Corte + barba", price: 50 },
+            { name: "Sobrancelha", price: 10 },
+            { name: "Corte + sobrancelha", price: 35 }
         ];
 
         // ========== FOTOS CARROSSEL ==========
