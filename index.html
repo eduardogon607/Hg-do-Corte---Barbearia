@@ -1068,6 +1068,7 @@
                 </div>
                 <div id="stepName" style="display:none;">
                     <div class="input-group"><i class="fas fa-user-astronaut"></i><input type="text" id="clientName" class="elegant-input" placeholder="Seu nome completo" autocomplete="off"></div>
+                    <div class="input-group"><i class="fab fa-whatsapp"></i><input type="tel" id="clientWhatsapp" class="elegant-input" placeholder="(DDD) 9 9999-9999" autocomplete="off"></div>
                     <div id="nameError" class="error-msg" style="color:#ff8888; margin-bottom:12px;"></div>
                     <div class="pix-info">
                         <div><i class="fas fa-credit-card"></i> <strong>Pagamento via PIX</strong></div>
@@ -1184,7 +1185,7 @@
         carouselModalEl.addEventListener('touchend', (e) => { const endX = e.changedTouches[0].screenX; if (endX < touchStartX - 50) document.getElementById('carouselNext').click(); if (endX > touchStartX + 50) document.getElementById('carouselPrev').click(); });
         document.querySelectorAll('.gallery-item').forEach(item => { item.addEventListener('click', () => { const cat = item.dataset.category; if (cat && categoryPhotos[cat]) openCarousel(cat); else alert("Sem fotos."); }); });
 
-        // ========== FUNÇÕES DE AGENDAMENTO CORRIGIDAS ==========
+        // ========== FUNÇÕES DE AGENDAMENTO ==========
         
         // Variável global para armazenar os horários indisponíveis (cache)
         let unavailableSlotsSet = new Set();
@@ -1201,10 +1202,12 @@
             return unavailableSlotsSet;
         }
         
-        async function addPendingAppointment(dateObj, hour, serviceName, servicePrice, clientName) {
+        async function addPendingAppointment(dateObj, hour, serviceName, servicePrice, clientName, clientWhatsapp) {
             const year = dateObj.fullDate.getFullYear(), month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), day = dateObj.fullDate.getDate().toString().padStart(2, '0');
             const dateKey = `${year}-${month}-${day}`, dateDisplay = dateObj.display, id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
-            const newPending = { id, dateKey, hour, dateDisplay, serviceName, servicePrice, clientName, timestamp: Date.now() };
+            const newPending = { 
+                id, dateKey, hour, dateDisplay, serviceName, servicePrice, clientName, clientWhatsapp, timestamp: Date.now() 
+            };
             await pendingRef.child(id).set(newPending);
             return true;
         }
@@ -1242,6 +1245,7 @@
                 serviceName: appData.serviceName,
                 servicePrice: appData.servicePrice,
                 clientName: appData.clientName,
+                clientWhatsapp: appData.clientWhatsapp,
                 confirmedAt: Date.now(),
                 timestamp: appData.timestamp || Date.now()
             };
@@ -1249,13 +1253,23 @@
             await appointmentsRef.child(newConfirmedId).set(newApp);
             await deletePending(pendingId);
             
+            // Gerar link do WhatsApp para enviar confirmação ao cliente
+            const phoneNumber = appData.clientWhatsapp.replace(/\D/g, '');
+            const confirmationMessage = `*✅ AGENDAMENTO CONFIRMADO - Hg do Corte*%0A%0A🧔 Cliente: ${encodeURIComponent(appData.clientName)}%0A📅 Data: ${encodeURIComponent(appData.dateDisplay)}%0A⏰ Horário: ${encodeURIComponent(appData.hour)}%0A✂️ Serviço: ${encodeURIComponent(appData.serviceName)}%0A💰 Valor: R$ ${appData.servicePrice}%0A%0A📍 Endereço: Passagem Samaritana, Marambaia - Belém PA%0A🕒 Chegue no horário agendado, tolerância de 15-20 minutos.%0A%0A✨ Agradecemos a preferência! ✨`;
+            
+            const whatsappLink = `https://wa.me/55${phoneNumber}?text=${confirmationMessage}`;
+            
+            // Abrir WhatsApp do barbeiro para enviar a mensagem ao cliente
+            window.open(whatsappLink, '_blank');
+            alert(`✅ Agendamento confirmado! Agora envie a mensagem de confirmação para o cliente ${appData.clientName} via WhatsApp.`);
+            
             // Recarregar os horários indisponíveis para manter o cache atualizado
             await loadUnavailableSlots();
             
             return true;
         }
         
-        // FUNÇÃO CORRIGIDA - isSlotBlockedFirebase (agora verifica TODOS os horários indisponíveis)
+        // FUNÇÃO CORRIGIDA - isSlotBlockedFirebase (verifica TODOS os horários indisponíveis)
         async function isSlotBlockedFirebase(dateObj, hour) {
             const year = dateObj.fullDate.getFullYear(), month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), day = dateObj.fullDate.getDate().toString().padStart(2, '0');
             const dateKey = `${year}-${month}-${day}`;
@@ -1305,6 +1319,7 @@
                 div.innerHTML = `
                     <div style="flex:1">
                         <strong style="color:var(--yellow);">${escapeHtml(p.clientName)}</strong><br>
+                        📱 WhatsApp: ${escapeHtml(p.clientWhatsapp)}<br>
                         📅 ${p.dateDisplay} ⏰ ${p.hour}<br>
                         ✂️ ${p.serviceName} - R$ ${p.servicePrice}
                     </div>
@@ -1373,6 +1388,7 @@
                 apps.push({ 
                     id: child.key,
                     clientName: appData.clientName,
+                    clientWhatsapp: appData.clientWhatsapp,
                     dateDisplay: appData.dateDisplay,
                     hour: appData.hour,
                     serviceName: appData.serviceName,
@@ -1397,6 +1413,7 @@
                 div.innerHTML = `
                     <div style="flex:1">
                         <strong style="color:var(--yellow);">${escapeHtml(app.clientName)}</strong><br>
+                        📱 WhatsApp: ${escapeHtml(app.clientWhatsapp)}<br>
                         📅 ${app.dateDisplay} ⏰ ${app.hour}<br>
                         ✂️ ${app.serviceName} - R$ ${app.servicePrice}
                     </div>
@@ -1499,7 +1516,6 @@
                         if (item) { item.classList.remove('available'); item.classList.add('unavailable'); item.querySelector('input').checked = true; }
                     }
                     alert(`${selectedSlots.length} horário(s) marcado(s) como indisponível.`);
-                    // Recarregar os horários no modal de agendamento se estiver aberto
                     if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
                         await renderHoursWithBlocked(selectedDate);
                     }
@@ -1515,7 +1531,6 @@
                         if (item) { item.classList.remove('unavailable'); item.classList.add('available'); item.querySelector('input').checked = false; }
                     }
                     alert(`${selectedSlots.length} horário(s) marcado(s) como disponível.`);
-                    // Recarregar os horários no modal de agendamento se estiver aberto
                     if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
                         await renderHoursWithBlocked(selectedDate);
                     }
@@ -1607,7 +1622,7 @@
         const nextToHoursBtn = document.getElementById('nextToHours'), nextToServiceOrNameBtn = document.getElementById('nextToServiceOrName');
         const backToDateBtn = document.getElementById('backToDate'), backToHourFromService = document.getElementById('backToHourFromService'), backToPrevStepBtn = document.getElementById('backToPrevStep');
         const nextToNameFromService = document.getElementById('nextToNameFromService');
-        const confirmBtn = document.getElementById('confirmBooking'), clientNameInput = document.getElementById('clientName'), nameErrorDiv = document.getElementById('nameError');
+        const confirmBtn = document.getElementById('confirmBooking'), clientNameInput = document.getElementById('clientName'), clientWhatsappInput = document.getElementById('clientWhatsapp'), nameErrorDiv = document.getElementById('nameError');
         let flowHasServiceSelection = true;
 
         function showStep(step) { stepDateDiv.style.display = 'none'; stepHourDiv.style.display = 'none'; stepServiceDiv.style.display = 'none'; stepNameDiv.style.display = 'none'; if (step === 'date') stepDateDiv.style.display = 'block'; if (step === 'hour') stepHourDiv.style.display = 'block'; if (step === 'service') stepServiceDiv.style.display = 'block'; if (step === 'name') stepNameDiv.style.display = 'block'; }
@@ -1618,21 +1633,55 @@
         nextToServiceOrNameBtn.addEventListener('click', async () => {
             if (selectedHour && !(await isSlotBlockedFirebase(selectedDate, selectedHour))) {
                 if (flowHasServiceSelection && !preSelectedService) { renderServices(); showStep('service'); selectedService = null; if (nextToNameFromService) nextToNameFromService.disabled = true; }
-                else { if (preSelectedService) selectedService = preSelectedService; showStep('name'); clientNameInput.value = ''; nameErrorDiv.innerText = ''; }
+                else { if (preSelectedService) selectedService = preSelectedService; showStep('name'); clientNameInput.value = ''; clientWhatsappInput.value = ''; nameErrorDiv.innerText = ''; }
             } else if (selectedHour && (await isSlotBlockedFirebase(selectedDate, selectedHour))) { alert("Horário não disponível."); await renderHoursWithBlocked(selectedDate); selectedHour = null; document.getElementById('nextToServiceOrName').disabled = true; }
         });
         if (backToHourFromService) backToHourFromService.addEventListener('click', () => showStep('hour'));
-        if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => { if (selectedService) { showStep('name'); clientNameInput.value = ''; nameErrorDiv.innerText = ''; } });
+        if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => { if (selectedService) { showStep('name'); clientNameInput.value = ''; clientWhatsappInput.value = ''; nameErrorDiv.innerText = ''; } });
         backToPrevStepBtn.addEventListener('click', () => { if (flowHasServiceSelection && !preSelectedService) showStep('service'); else showStep('hour'); });
 
         confirmBtn.addEventListener('click', async () => {
             const nome = clientNameInput.value.trim();
-            if (nome === "") { nameErrorDiv.innerText = "Digite seu nome completo."; return; }
-            if (nome.length < 3) { nameErrorDiv.innerText = "Nome muito curto."; return; }
-            if (await isSlotBlockedFirebase(selectedDate, selectedHour)) { alert("Horário não disponível."); closeBookingModal(); resetBooking(); return; }
-            const success = await addPendingAppointment(selectedDate, selectedHour, selectedService.name, selectedService.price, nome);
-            if (!success) { alert("Erro ao solicitar agendamento."); closeBookingModal(); resetBooking(); return; }
-            const msg = `*NOVA SOLICITAÇÃO DE AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardando confirmação mediante envio do comprovante de pagamento.`;
+            const whatsapp = clientWhatsappInput.value.trim();
+            
+            if (nome === "") { 
+                nameErrorDiv.innerText = "Digite seu nome completo."; 
+                return; 
+            }
+            if (nome.length < 3) { 
+                nameErrorDiv.innerText = "Nome muito curto."; 
+                return; 
+            }
+            
+            // Validação de WhatsApp
+            const whatsappRegex = /^\(?\d{2}\)?\s?9\s?\d{4}-?\d{4}$/;
+            if (whatsapp === "") { 
+                nameErrorDiv.innerText = "Digite seu número de WhatsApp."; 
+                return; 
+            }
+            const whatsappClean = whatsapp.replace(/\D/g, '');
+            if (whatsappClean.length !== 11) { 
+                nameErrorDiv.innerText = "Digite um WhatsApp válido (DDD + 9 + 8 dígitos). Ex: (91) 98400-6046"; 
+                return; 
+            }
+            
+            if (await isSlotBlockedFirebase(selectedDate, selectedHour)) { 
+                alert("Horário não disponível."); 
+                closeBookingModal(); 
+                resetBooking(); 
+                return; 
+            }
+            
+            const success = await addPendingAppointment(selectedDate, selectedHour, selectedService.name, selectedService.price, nome, whatsapp);
+            if (!success) { 
+                alert("Erro ao solicitar agendamento."); 
+                closeBookingModal(); 
+                resetBooking(); 
+                return; 
+            }
+            
+            const msg = `*NOVA SOLICITAÇÃO DE AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📱 WhatsApp: ${encodeURIComponent(whatsapp)}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardando confirmação mediante envio do comprovante de pagamento.`;
+            
             closeBookingModal();
             window.open(`https://wa.me/5591984006046?text=${msg}`, '_blank');
             alert("✅ Solicitação enviada! O agendamento só será confirmado após o envio do comprovante de pagamento via WhatsApp.");
