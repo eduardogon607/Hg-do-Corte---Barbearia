@@ -893,6 +893,27 @@
             text-align: center;
             color: #aaa;
         }
+
+        .badge-pending {
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+        }
+
+        .admin-buttons-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .admin-buttons-row .btn {
+            flex: 1;
+            margin-top: 0;
+        }
     </style>
 </head>
 
@@ -961,7 +982,7 @@
                         <div class="service-icon"><i class="fas fa-star"></i></div>
                         <h3>Combo Hg</h3>
                         <p>Corte + Barba + Sobrancelha.</p>
-                        <div class="price">R$ 50</div>
+                        <div class="price">R$ 60</div>
                         <button class="btn open-modal-btn" data-preselect-service="true" data-service-name="Combo Hg"
                             data-service-price="60"><i class="fas fa-clock"></i> Agendar</button>
                     </div>
@@ -1105,10 +1126,12 @@
                 <div class="admin-tab" data-tab="confirmed">✅ Agendamentos Confirmados</div>
                 <div class="admin-tab" data-tab="unavailable">🚫 Indisponibilidades</div>
             </div>
+            <div style="margin-bottom: 16px;">
+                <button id="refreshAdminBtn" class="btn" style="width:100%; background:#333;">🔄 Atualizar Tudo</button>
+            </div>
             <div id="pendingTab" class="tab-content active"><div id="pendingList" class="appointment-list"></div></div>
             <div id="confirmedTab" class="tab-content"><div id="confirmedList" class="appointment-list"></div></div>
             <div id="unavailableTab" class="tab-content"><div id="unavailableGridContainer"></div></div>
-            <button id="refreshAdminBtn" class="btn" style="margin-top:20px; width:100%; background:#333;">Atualizar Tudo</button>
         </div>
     </div>
 
@@ -1166,31 +1189,116 @@
             exclusivo: [{ src: "WhatsApp Image 2026-04-10 at 11.34.11.jpeg", title: "Luzes - R$100,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.12.jpeg", title: "Reflexo - R$100,00" }, { src: "WhatsApp Image 2026-04-10 at 11.34.16.jpeg", title: "Nevou - R$110,00" }]
         };
 
-        // ========== CARROSSEL ==========
-        let currentCarouselPhotos = [], currentPhotoIndex = 0;
-        const carouselModalEl = document.getElementById('carouselModal');
-        const carouselMedia = document.getElementById('carouselMedia');
-        const carouselCaption = document.getElementById('carouselCaption');
-        const carouselDots = document.getElementById('carouselDots');
-        function isVideoFile(src) { return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(src); }
-        function updateCarousel() { if (!currentCarouselPhotos.length) return; const media = currentCarouselPhotos[currentPhotoIndex]; const src = media.src, title = media.title; carouselMedia.innerHTML = ''; if (isVideoFile(src)) { const video = document.createElement('video'); video.src = src; video.controls = true; video.autoplay = false; video.loop = true; video.playsInline = true; video.muted = false; video.style.maxWidth = '100%'; video.style.maxHeight = '70vh'; video.style.borderRadius = '24px'; carouselMedia.appendChild(video); } else { const img = document.createElement('img'); img.src = src; img.alt = title; img.style.maxWidth = '100%'; img.style.maxHeight = '70vh'; img.style.borderRadius = '24px'; img.style.objectFit = 'contain'; carouselMedia.appendChild(img); } carouselCaption.textContent = title; const dots = document.querySelectorAll('#carouselDots .dot'); dots.forEach((dot, idx) => { if (idx === currentPhotoIndex) dot.classList.add('active'); else dot.classList.remove('active'); }); }
-        function buildDots() { carouselDots.innerHTML = ''; currentCarouselPhotos.forEach((_, idx) => { const dot = document.createElement('div'); dot.classList.add('dot'); if (idx === currentPhotoIndex) dot.classList.add('active'); dot.addEventListener('click', () => { currentPhotoIndex = idx; updateCarousel(); }); carouselDots.appendChild(dot); }); }
-        function openCarousel(categoryKey) { const photos = categoryPhotos[categoryKey]; if (!photos || photos.length === 0) { alert("Nenhuma mídia disponível."); return; } currentCarouselPhotos = photos; currentPhotoIndex = 0; buildDots(); updateCarousel(); carouselModalEl.classList.add('active'); document.body.style.overflow = 'hidden'; }
-        function closeCarousel() { carouselModalEl.classList.remove('active'); document.body.style.overflow = ''; const v = carouselMedia.querySelector('video'); if (v) v.pause(); }
-        document.getElementById('closeCarouselBtn').addEventListener('click', closeCarousel);
-        document.getElementById('carouselPrev').addEventListener('click', () => { if (currentCarouselPhotos.length) { currentPhotoIndex = (currentPhotoIndex - 1 + currentCarouselPhotos.length) % currentCarouselPhotos.length; updateCarousel(); } });
-        document.getElementById('carouselNext').addEventListener('click', () => { if (currentCarouselPhotos.length) { currentPhotoIndex = (currentPhotoIndex + 1) % currentCarouselPhotos.length; updateCarousel(); } });
-        carouselModalEl.addEventListener('click', (e) => { if (e.target === carouselModalEl) closeCarousel(); });
-        let touchStartX = 0; carouselModalEl.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
-        carouselModalEl.addEventListener('touchend', (e) => { const endX = e.changedTouches[0].screenX; if (endX < touchStartX - 50) document.getElementById('carouselNext').click(); if (endX > touchStartX + 50) document.getElementById('carouselPrev').click(); });
-        document.querySelectorAll('.gallery-item').forEach(item => { item.addEventListener('click', () => { const cat = item.dataset.category; if (cat && categoryPhotos[cat]) openCarousel(cat); else alert("Sem fotos."); }); });
+        // ========== VARIÁVEIS GLOBAIS ==========
+        let unavailableSlotsSet = new Set();
+        let selectedDate = null, selectedHour = null, selectedService = null, preSelectedService = null;
+        let lastPendingCount = 0;
+        let notificationMonitoringInterval = null;
+
+        // ========== FUNÇÕES DE NOTIFICAÇÃO ==========
+        
+        // Enviar notificação via WhatsApp para o dono
+        async function sendWhatsAppNotificationToOwner(appointmentData) {
+            const ownerPhone = "5591984006046";
+            
+            const message = `*🆕 NOVA SOLICITAÇÃO DE AGENDAMENTO!*%0A%0A` +
+                            `🧔 *Cliente:* ${encodeURIComponent(appointmentData.clientName)}%0A` +
+                            `✂️ *Serviço:* ${encodeURIComponent(appointmentData.serviceName)}%0A` +
+                            `💰 *Valor:* R$ ${appointmentData.servicePrice}%0A` +
+                            `📅 *Data:* ${encodeURIComponent(appointmentData.dateDisplay)}%0A` +
+                            `⏰ *Horário:* ${encodeURIComponent(appointmentData.hour)}%0A` +
+                            `📱 *WhatsApp:* ${encodeURIComponent(appointmentData.clientWhatsapp)}%0A%0A` +
+                            `🔔 *Acesse o painel administrativo para aprovar esta solicitação!*%0A%0A` +
+                            `🔗 *Link do Painel:* ${window.location.href.split('#')[0]}#admin`;
+            
+            window.open(`https://wa.me/${ownerPhone}?text=${message}`, '_blank');
+            console.log("Notificação WhatsApp enviada para o dono:", appointmentData.clientName);
+        }
+        
+        // Atualizar badge no título da aba
+        async function updatePendingBadge() {
+            const snapshot = await pendingRef.once("value");
+            let pendingCount = 0;
+            snapshot.forEach(() => pendingCount++);
+            
+            if (pendingCount > 0) {
+                document.title = `📌 (${pendingCount}) Hg do Corte | Admin`;
+            } else {
+                document.title = `Hg do Corte | Agendamento Completo`;
+            }
+            
+            return pendingCount;
+        }
+        
+        // Tocar som de notificação
+        function playNotificationSound() {
+            try {
+                const audio = new Audio();
+                audio.src = 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3';
+                audio.volume = 0.3;
+                audio.play().catch(e => console.log("Som não pôde ser reproduzido"));
+            } catch(e) {
+                console.log("Erro ao tocar som");
+            }
+        }
+        
+        // Verificar novas solicitações
+        async function checkNewAppointments() {
+            const currentCount = await updatePendingBadge();
+            
+            if (currentCount > lastPendingCount && currentCount > 0 && document.getElementById('adminListModal')?.classList.contains('active')) {
+                playNotificationSound();
+                
+                if (Notification.permission === 'granted' && document.hidden) {
+                    new Notification(`🆕 Nova solicitação de agendamento!`, {
+                        body: `Você tem ${currentCount} solicitação(ões) pendente(s) para aprovar.`,
+                        icon: 'https://via.placeholder.com/192x192?text=Hg',
+                        silent: false
+                    });
+                }
+            }
+            
+            lastPendingCount = currentCount;
+        }
+        
+        // Solicitar permissão para notificações desktop
+        async function requestDesktopNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('Este navegador não suporta notificações desktop');
+                return false;
+            }
+            
+            if (Notification.permission === 'granted') {
+                return true;
+            }
+            
+            if (Notification.permission !== 'denied') {
+                const permission = await Notification.requestPermission();
+                return permission === 'granted';
+            }
+            
+            return false;
+        }
+        
+        // Iniciar monitoramento de pendências
+        function startPendingMonitoring() {
+            if (notificationMonitoringInterval) {
+                clearInterval(notificationMonitoringInterval);
+            }
+            notificationMonitoringInterval = setInterval(checkNewAppointments, 30000);
+            checkNewAppointments();
+            requestDesktopNotificationPermission();
+        }
+        
+        function stopPendingMonitoring() {
+            if (notificationMonitoringInterval) {
+                clearInterval(notificationMonitoringInterval);
+                notificationMonitoringInterval = null;
+            }
+        }
 
         // ========== FUNÇÕES DE AGENDAMENTO ==========
         
-        // Variável global para armazenar os horários indisponíveis (cache)
-        let unavailableSlotsSet = new Set();
-        
-        // Função para carregar todos os horários indisponíveis do Firebase
         async function loadUnavailableSlots() {
             const snapshot = await unavailableRef.once("value");
             const newSet = new Set();
@@ -1203,12 +1311,44 @@
         }
         
         async function addPendingAppointment(dateObj, hour, serviceName, servicePrice, clientName, clientWhatsapp) {
-            const year = dateObj.fullDate.getFullYear(), month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), day = dateObj.fullDate.getDate().toString().padStart(2, '0');
-            const dateKey = `${year}-${month}-${day}`, dateDisplay = dateObj.display, id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            const year = dateObj.fullDate.getFullYear(), 
+                  month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), 
+                  day = dateObj.fullDate.getDate().toString().padStart(2, '0');
+            const dateKey = `${year}-${month}-${day}`, 
+                  dateDisplay = dateObj.display, 
+                  id = Date.now() + '-' + Math.random().toString(36).substr(2, 6);
+            
+            const pendingSnapshot = await pendingRef.once("value");
+            let alreadyPending = false;
+            pendingSnapshot.forEach(child => {
+                const val = child.val();
+                if (val.dateKey === dateKey && val.hour === hour && val.clientWhatsapp === clientWhatsapp) {
+                    alreadyPending = true;
+                }
+            });
+            
+            if (alreadyPending) {
+                alert("⚠️ Você já tem uma solicitação pendente para este horário! Aguarde a confirmação.");
+                return false;
+            }
+            
             const newPending = { 
-                id, dateKey, hour, dateDisplay, serviceName, servicePrice, clientName, clientWhatsapp, timestamp: Date.now() 
+                id, dateKey, hour, dateDisplay, serviceName, servicePrice, 
+                clientName, clientWhatsapp, timestamp: Date.now() 
             };
+            
             await pendingRef.child(id).set(newPending);
+            
+            // Enviar notificação via WhatsApp para o dono
+            await sendWhatsAppNotificationToOwner({
+                clientName,
+                serviceName,
+                servicePrice,
+                dateDisplay,
+                hour,
+                clientWhatsapp
+            });
+            
             return true;
         }
         
@@ -1253,35 +1393,27 @@
             await appointmentsRef.child(newConfirmedId).set(newApp);
             await deletePending(pendingId);
             
-            // Gerar link do WhatsApp para enviar confirmação ao cliente
             const phoneNumber = appData.clientWhatsapp.replace(/\D/g, '');
             const confirmationMessage = `*✅ AGENDAMENTO CONFIRMADO - Hg do Corte*%0A%0A🧔 Cliente: ${encodeURIComponent(appData.clientName)}%0A📅 Data: ${encodeURIComponent(appData.dateDisplay)}%0A⏰ Horário: ${encodeURIComponent(appData.hour)}%0A✂️ Serviço: ${encodeURIComponent(appData.serviceName)}%0A💰 Valor: R$ ${appData.servicePrice}%0A%0A📍 Endereço: Passagem Samaritana, Marambaia - Belém PA%0A🕒 Chegue no horário agendado, tolerância de 15-20 minutos.%0A%0A✨ Agradecemos a preferência! ✨`;
             
             const whatsappLink = `https://wa.me/55${phoneNumber}?text=${confirmationMessage}`;
-            
-            // Abrir WhatsApp do barbeiro para enviar a mensagem ao cliente
             window.open(whatsappLink, '_blank');
             alert(`✅ Agendamento confirmado! Agora envie a mensagem de confirmação para o cliente ${appData.clientName} via WhatsApp.`);
             
-            // Recarregar os horários indisponíveis para manter o cache atualizado
             await loadUnavailableSlots();
-            
             return true;
         }
         
-        // FUNÇÃO CORRIGIDA - isSlotBlockedFirebase (verifica TODOS os horários indisponíveis)
         async function isSlotBlockedFirebase(dateObj, hour) {
             const year = dateObj.fullDate.getFullYear(), month = (dateObj.fullDate.getMonth() + 1).toString().padStart(2, '0'), day = dateObj.fullDate.getDate().toString().padStart(2, '0');
             const dateKey = `${year}-${month}-${day}`;
             
-            // Verificar se o horário já foi confirmado
             const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(dateKey).once("value");
             let blocked = false;
             snapshot.forEach(child => { 
                 if (child.val().hour === hour) blocked = true; 
             });
             
-            // Verificar se o horário está na lista de indisponíveis (usando o cache ou carregando novamente)
             const slotKey = `${dateKey}|${hour}`;
             if (unavailableSlotsSet.has(slotKey)) {
                 blocked = true;
@@ -1359,6 +1491,7 @@
                 alert("✅ Agendamento confirmado com sucesso!");
                 await renderPendingList();
                 await renderConfirmedList();
+                await updatePendingBadge();
                 
                 if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
                     await renderHoursWithBlocked(selectedDate);
@@ -1374,6 +1507,7 @@
             if (confirm("❌ Excluir esta solicitação pendente?")) { 
                 await deletePending(id); 
                 await renderPendingList();
+                await updatePendingBadge();
             }
         }
         
@@ -1436,7 +1570,8 @@
             if (confirm("⚠️ Excluir este agendamento confirmado? O horário ficará livre novamente.")) {
                 await deleteConfirmed(id);
                 await renderConfirmedList();
-                await loadUnavailableSlots(); // Recarregar indisponíveis
+                await loadUnavailableSlots();
+                await updatePendingBadge();
                 
                 if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
                     await renderHoursWithBlocked(selectedDate);
@@ -1449,7 +1584,6 @@
             if (!container) return;
             container.innerHTML = '<div class="loading-indicator">Carregando...</div>';
             
-            // Recarregar a lista de indisponíveis
             await loadUnavailableSlots();
             
             const futureDates = [];
@@ -1559,8 +1693,6 @@
             offset++;
         }
 
-        let selectedDate = null, selectedHour = null, selectedService = null, preSelectedService = null;
-
         function renderDates() {
             const cont = document.getElementById('datesContainer'); cont.innerHTML = '';
             availableDates.forEach(date => {
@@ -1578,7 +1710,6 @@
             const isToday = date.fullDate.toDateString() === now.toDateString();
             let hasAvailable = false;
             
-            // Carregar indisponíveis atualizados
             await loadUnavailableSlots();
             
             for (const hour of availableHours) {
@@ -1626,6 +1757,7 @@
         let flowHasServiceSelection = true;
 
         function showStep(step) { stepDateDiv.style.display = 'none'; stepHourDiv.style.display = 'none'; stepServiceDiv.style.display = 'none'; stepNameDiv.style.display = 'none'; if (step === 'date') stepDateDiv.style.display = 'block'; if (step === 'hour') stepHourDiv.style.display = 'block'; if (step === 'service') stepServiceDiv.style.display = 'block'; if (step === 'name') stepNameDiv.style.display = 'block'; }
+        
         function resetBooking() { selectedDate = null; selectedHour = null; selectedService = null; preSelectedService = null; document.getElementById('nextToHours').disabled = true; document.getElementById('nextToServiceOrName').disabled = true; if (nextToNameFromService) nextToNameFromService.disabled = true; showStep('date'); document.querySelectorAll('.date-btn').forEach(el => el.classList.remove('selected')); }
 
         nextToHoursBtn.addEventListener('click', async () => { if (selectedDate) { await renderHoursWithBlocked(selectedDate); showStep('hour'); selectedHour = null; document.getElementById('nextToServiceOrName').disabled = true; } });
@@ -1653,7 +1785,6 @@
                 return; 
             }
             
-            // Validação de WhatsApp
             const whatsappRegex = /^\(?\d{2}\)?\s?9\s?\d{4}-?\d{4}$/;
             if (whatsapp === "") { 
                 nameErrorDiv.innerText = "Digite seu número de WhatsApp."; 
@@ -1705,27 +1836,52 @@
         // Admin
         const adminLoginModal = document.getElementById('adminLoginModal'), adminListModal = document.getElementById('adminListModal'), adminLink = document.getElementById('adminLink');
         const closeAdminLoginBtn = document.getElementById('closeAdminLoginBtn'), closeAdminListBtn = document.getElementById('closeAdminListBtn'), doLoginBtn = document.getElementById('doLoginBtn'), refreshAdminBtn = document.getElementById('refreshAdminBtn');
+        
         function openAdminLogin() { adminLoginModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
         function closeAdminLogin() { adminLoginModal.classList.remove('active'); document.body.style.overflow = ''; document.getElementById('loginError').innerText = ''; }
+        
         async function openAdminList() { 
-            await loadUnavailableSlots(); // Carregar indisponíveis antes de abrir
+            await loadUnavailableSlots(); 
             await renderPendingList(); 
             await renderConfirmedList(); 
             await renderUnavailableGrid(); 
+            await updatePendingBadge();
             adminListModal.classList.add('active'); 
             document.body.style.overflow = 'hidden'; 
         }
-        function closeAdminList() { adminListModal.classList.remove('active'); document.body.style.overflow = ''; }
+        
+        function closeAdminList() { 
+            adminListModal.classList.remove('active'); 
+            document.body.style.overflow = '';
+            stopPendingMonitoring();
+        }
+        
         adminLink.addEventListener('click', (e) => { e.preventDefault(); openAdminLogin(); });
         closeAdminLoginBtn.addEventListener('click', closeAdminLogin); 
         closeAdminListBtn.addEventListener('click', closeAdminList); 
+        
         refreshAdminBtn.addEventListener('click', async () => { 
             await loadUnavailableSlots();
             await renderPendingList(); 
             await renderConfirmedList(); 
             await renderUnavailableGrid(); 
+            await updatePendingBadge();
         });
-        doLoginBtn.addEventListener('click', () => { const u = document.getElementById('adminUser').value, p = document.getElementById('adminPass').value; if (u === 'Hgbarbeiro' && p === 'Hgdocorte') { closeAdminLogin(); openAdminList(); document.getElementById('adminUser').value = ''; document.getElementById('adminPass').value = ''; } else { document.getElementById('loginError').innerText = 'Usuário ou senha inválidos.'; } });
+        
+        doLoginBtn.addEventListener('click', () => { 
+            const u = document.getElementById('adminUser').value, 
+                  p = document.getElementById('adminPass').value; 
+            
+            if (u === 'Hgbarbeiro' && p === 'Hgdocorte') { 
+                closeAdminLogin(); 
+                openAdminList();
+                startPendingMonitoring();
+                document.getElementById('adminUser').value = ''; 
+                document.getElementById('adminPass').value = ''; 
+            } else { 
+                document.getElementById('loginError').innerText = 'Usuário ou senha inválidos.'; 
+            } 
+        });
 
         // Abas no admin
         const tabs = document.querySelectorAll('.admin-tab');
@@ -1759,8 +1915,104 @@
         const copyBtn = document.getElementById('copyPixKeyBtn');
         if (copyBtn) { copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('pixKeyValue').innerText).then(() => alert("Chave PIX copiada!")).catch(() => alert("Erro ao copiar.")); }); }
         
-        // Carregar indisponíveis ao iniciar
+        // Carregar indisponíveis ao iniciar e verificar pendências
         loadUnavailableSlots();
+        updatePendingBadge();
+        
+        // Verificar pendências a cada 30 segundos mesmo sem admin logado (para badge)
+        setInterval(updatePendingBadge, 30000);
+        
+        // Carrossel
+        let currentCarouselPhotos = [], currentPhotoIndex = 0;
+        const carouselModalEl = document.getElementById('carouselModal');
+        const carouselMediaEl = document.getElementById('carouselMedia');
+        const carouselCaptionEl = document.getElementById('carouselCaption');
+        const carouselDotsEl = document.getElementById('carouselDots');
+        
+        function isVideoFile(src) { return /\.(mp4|webm|ogg|mov|avi|mkv)$/i.test(src); }
+        
+        function updateCarousel() { 
+            if (!currentCarouselPhotos.length) return; 
+            const media = currentCarouselPhotos[currentPhotoIndex]; 
+            const src = media.src, title = media.title; 
+            carouselMediaEl.innerHTML = ''; 
+            if (isVideoFile(src)) { 
+                const video = document.createElement('video'); 
+                video.src = src; 
+                video.controls = true; 
+                video.autoplay = false; 
+                video.loop = true; 
+                video.playsInline = true; 
+                video.muted = false; 
+                video.style.maxWidth = '100%'; 
+                video.style.maxHeight = '70vh'; 
+                video.style.borderRadius = '24px'; 
+                carouselMediaEl.appendChild(video); 
+            } else { 
+                const img = document.createElement('img'); 
+                img.src = src; 
+                img.alt = title; 
+                img.style.maxWidth = '100%'; 
+                img.style.maxHeight = '70vh'; 
+                img.style.borderRadius = '24px'; 
+                img.style.objectFit = 'contain'; 
+                carouselMediaEl.appendChild(img); 
+            } 
+            carouselCaptionEl.textContent = title; 
+            const dots = document.querySelectorAll('#carouselDots .dot'); 
+            dots.forEach((dot, idx) => { 
+                if (idx === currentPhotoIndex) dot.classList.add('active'); 
+                else dot.classList.remove('active'); 
+            }); 
+        }
+        
+        function buildDots() { 
+            carouselDotsEl.innerHTML = ''; 
+            currentCarouselPhotos.forEach((_, idx) => { 
+                const dot = document.createElement('div'); 
+                dot.classList.add('dot'); 
+                if (idx === currentPhotoIndex) dot.classList.add('active'); 
+                dot.addEventListener('click', () => { 
+                    currentPhotoIndex = idx; 
+                    updateCarousel(); 
+                }); 
+                carouselDotsEl.appendChild(dot); 
+            }); 
+        }
+        
+        function openCarousel(categoryKey) { 
+            const photos = categoryPhotos[categoryKey]; 
+            if (!photos || photos.length === 0) { 
+                alert("Nenhuma mídia disponível."); 
+                return; 
+            } 
+            currentCarouselPhotos = photos; 
+            currentPhotoIndex = 0; 
+            buildDots(); 
+            updateCarousel(); 
+            carouselModalEl.classList.add('active'); 
+            document.body.style.overflow = 'hidden'; 
+        }
+        
+        function closeCarousel() { 
+            carouselModalEl.classList.remove('active'); 
+            document.body.style.overflow = ''; 
+            const v = carouselMediaEl.querySelector('video'); 
+            if (v) v.pause(); 
+        }
+        
+        document.getElementById('closeCarouselBtn').addEventListener('click', closeCarousel);
+        document.getElementById('carouselPrev').addEventListener('click', () => { if (currentCarouselPhotos.length) { currentPhotoIndex = (currentPhotoIndex - 1 + currentCarouselPhotos.length) % currentCarouselPhotos.length; updateCarousel(); } });
+        document.getElementById('carouselNext').addEventListener('click', () => { if (currentCarouselPhotos.length) { currentPhotoIndex = (currentPhotoIndex + 1) % currentCarouselPhotos.length; updateCarousel(); } });
+        carouselModalEl.addEventListener('click', (e) => { if (e.target === carouselModalEl) closeCarousel(); });
+        
+        document.querySelectorAll('.gallery-item').forEach(item => { 
+            item.addEventListener('click', () => { 
+                const cat = item.dataset.category; 
+                if (cat && categoryPhotos[cat]) openCarousel(cat); 
+                else alert("Sem fotos."); 
+            }); 
+        });
     </script>
 </body>
 
