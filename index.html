@@ -1195,9 +1195,9 @@
         let lastPendingCount = 0;
         let notificationMonitoringInterval = null;
 
-        // ========== FUNÇÕES DE NOTIFICAÇÃO ==========
+        // ========== FUNÇÕES DE NOTIFICAÇÃO COMPATÍVEIS COM SAFARI ==========
         
-        // Enviar notificação via WhatsApp para o dono
+        // Enviar notificação via WhatsApp para o dono (compatível com Safari)
         async function sendWhatsAppNotificationToOwner(appointmentData) {
             const ownerPhone = "5591984006046";
             
@@ -1211,8 +1211,59 @@
                             `🔔 *Acesse o painel administrativo para aprovar esta solicitação!*%0A%0A` +
                             `🔗 *Link do Painel:* ${window.location.href.split('#')[0]}#admin`;
             
-            window.open(`https://wa.me/${ownerPhone}?text=${message}`, '_blank');
+            // Detectar se é Safari no iPhone
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isIOSChrome = /CriOS/.test(navigator.userAgent);
+            
+            if (isIOS && !isIOSChrome) {
+                // Safari no iPhone - usar esquema whatsapp://
+                const whatsappUrl = `whatsapp://send?phone=${ownerPhone}&text=${message}`;
+                window.location.href = whatsappUrl;
+                
+                // Fallback para web após 500ms
+                setTimeout(() => {
+                    const webUrl = `https://wa.me/${ownerPhone}?text=${message}`;
+                    window.open(webUrl, '_blank');
+                }, 500);
+            } else {
+                // Android, Chrome, Edge, etc
+                const whatsappUrl = `https://wa.me/${ownerPhone}?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            }
+            
             console.log("Notificação WhatsApp enviada para o dono:", appointmentData.clientName);
+        }
+        
+        // Função para o cliente enviar mensagem após agendar (compatível com Safari)
+        function sendClientConfirmationMessage(nome, dateDisplay, hour, serviceName, price, whatsapp) {
+            const ownerPhone = "5591984006046";
+            const msg = `*NOVA SOLICITAÇÃO DE AGENDAMENTO - Hg do Corte*%0A` +
+                        `🧔 Cliente: ${encodeURIComponent(nome)}%0A` +
+                        `📅 Data: ${encodeURIComponent(dateDisplay)}%0A` +
+                        `⏰ Horário: ${encodeURIComponent(hour)}%0A` +
+                        `✂️ Serviço: ${encodeURIComponent(serviceName)}%0A` +
+                        `💰 Valor: R$ ${price}%0A` +
+                        `📱 WhatsApp: ${encodeURIComponent(whatsapp)}%0A` +
+                        `📍 Passagem Samaritana, Marambaia - Belém PA%0A` +
+                        `🔔 Aguardando confirmação mediante envio do comprovante de pagamento.`;
+            
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isIOSChrome = /CriOS/.test(navigator.userAgent);
+            
+            if (isIOS && !isIOSChrome) {
+                // Safari no iPhone
+                const whatsappUrl = `whatsapp://send?phone=${ownerPhone}&text=${msg}`;
+                window.location.href = whatsappUrl;
+                
+                setTimeout(() => {
+                    const webUrl = `https://wa.me/${ownerPhone}?text=${msg}`;
+                    window.open(webUrl, '_blank');
+                }, 800);
+            } else {
+                const webUrl = `https://wa.me/${ownerPhone}?text=${msg}`;
+                window.open(webUrl, '_blank');
+            }
         }
         
         // Atualizar badge no título da aba
@@ -1772,6 +1823,7 @@
         if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => { if (selectedService) { showStep('name'); clientNameInput.value = ''; clientWhatsappInput.value = ''; nameErrorDiv.innerText = ''; } });
         backToPrevStepBtn.addEventListener('click', () => { if (flowHasServiceSelection && !preSelectedService) showStep('service'); else showStep('hour'); });
 
+        // Botão Confirmar modificado para funcionar no Safari
         confirmBtn.addEventListener('click', async () => {
             const nome = clientNameInput.value.trim();
             const whatsapp = clientWhatsappInput.value.trim();
@@ -1785,7 +1837,6 @@
                 return; 
             }
             
-            const whatsappRegex = /^\(?\d{2}\)?\s?9\s?\d{4}-?\d{4}$/;
             if (whatsapp === "") { 
                 nameErrorDiv.innerText = "Digite seu número de WhatsApp."; 
                 return; 
@@ -1811,11 +1862,11 @@
                 return; 
             }
             
-            const msg = `*NOVA SOLICITAÇÃO DE AGENDAMENTO - Hg do Corte*%0A🧔 Cliente: ${encodeURIComponent(nome)}%0A📅 Data: ${encodeURIComponent(selectedDate.display)}%0A⏰ Horário: ${encodeURIComponent(selectedHour)}%0A✂️ Serviço: ${encodeURIComponent(selectedService.name)}%0A💰 Valor: R$ ${selectedService.price}%0A📱 WhatsApp: ${encodeURIComponent(whatsapp)}%0A📍 Passagem Samaritana, Marambaia - Belém PA%0A🔔 Aguardando confirmação mediante envio do comprovante de pagamento.`;
+            // Usar a nova função compatível com Safari
+            sendClientConfirmationMessage(nome, selectedDate.display, selectedHour, selectedService.name, selectedService.price, whatsapp);
             
-            closeBookingModal();
-            window.open(`https://wa.me/5591984006046?text=${msg}`, '_blank');
             alert("✅ Solicitação enviada! O agendamento só será confirmado após o envio do comprovante de pagamento via WhatsApp.");
+            closeBookingModal();
             resetBooking();
         });
 
@@ -2014,6 +2065,7 @@
             }); 
         });
     </script>
+    
 </body>
 
 </html>
