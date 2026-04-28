@@ -1195,9 +1195,8 @@
         let lastPendingCount = 0;
         let notificationMonitoringInterval = null;
 
-        // ========== FUNÇÕES DE NOTIFICAÇÃO COMPATÍVEIS COM SAFARI ==========
+        // ========== FUNÇÕES DE NOTIFICAÇÃO ==========
         
-        // Enviar notificação via WhatsApp para o dono (compatível com Safari)
         async function sendWhatsAppNotificationToOwner(appointmentData) {
             const ownerPhone = "5591984006046";
             
@@ -1211,31 +1210,22 @@
                             `🔔 *Acesse o painel administrativo para aprovar esta solicitação!*%0A%0A` +
                             `🔗 *Link do Painel:* ${window.location.href.split('#')[0]}#admin`;
             
-            // Detectar se é Safari no iPhone
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             const isIOSChrome = /CriOS/.test(navigator.userAgent);
             
             if (isIOS && !isIOSChrome) {
-                // Safari no iPhone - usar esquema whatsapp://
                 const whatsappUrl = `whatsapp://send?phone=${ownerPhone}&text=${message}`;
                 window.location.href = whatsappUrl;
-                
-                // Fallback para web após 500ms
                 setTimeout(() => {
                     const webUrl = `https://wa.me/${ownerPhone}?text=${message}`;
                     window.open(webUrl, '_blank');
                 }, 500);
             } else {
-                // Android, Chrome, Edge, etc
                 const whatsappUrl = `https://wa.me/${ownerPhone}?text=${message}`;
                 window.open(whatsappUrl, '_blank');
             }
-            
-            console.log("Notificação WhatsApp enviada para o dono:", appointmentData.clientName);
         }
         
-        // Função para o cliente enviar mensagem após agendar (compatível com Safari)
         function sendClientConfirmationMessage(nome, dateDisplay, hour, serviceName, price, whatsapp) {
             const ownerPhone = "5591984006046";
             const msg = `*NOVA SOLICITAÇÃO DE AGENDAMENTO - Hg do Corte*%0A` +
@@ -1252,10 +1242,8 @@
             const isIOSChrome = /CriOS/.test(navigator.userAgent);
             
             if (isIOS && !isIOSChrome) {
-                // Safari no iPhone
                 const whatsappUrl = `whatsapp://send?phone=${ownerPhone}&text=${msg}`;
                 window.location.href = whatsappUrl;
-                
                 setTimeout(() => {
                     const webUrl = `https://wa.me/${ownerPhone}?text=${msg}`;
                     window.open(webUrl, '_blank');
@@ -1266,7 +1254,6 @@
             }
         }
         
-        // Atualizar badge no título da aba
         async function updatePendingBadge() {
             const snapshot = await pendingRef.once("value");
             let pendingCount = 0;
@@ -1281,7 +1268,6 @@
             return pendingCount;
         }
         
-        // Tocar som de notificação
         function playNotificationSound() {
             try {
                 const audio = new Audio();
@@ -1293,7 +1279,6 @@
             }
         }
         
-        // Verificar novas solicitações
         async function checkNewAppointments() {
             const currentCount = await updatePendingBadge();
             
@@ -1312,7 +1297,6 @@
             lastPendingCount = currentCount;
         }
         
-        // Solicitar permissão para notificações desktop
         async function requestDesktopNotificationPermission() {
             if (!('Notification' in window)) {
                 console.log('Este navegador não suporta notificações desktop');
@@ -1331,7 +1315,6 @@
             return false;
         }
         
-        // Iniciar monitoramento de pendências
         function startPendingMonitoring() {
             if (notificationMonitoringInterval) {
                 clearInterval(notificationMonitoringInterval);
@@ -1390,7 +1373,6 @@
             
             await pendingRef.child(id).set(newPending);
             
-            // Enviar notificação via WhatsApp para o dono
             await sendWhatsAppNotificationToOwner({
                 clientName,
                 serviceName,
@@ -1411,6 +1393,7 @@
             await appointmentsRef.child(id).remove(); 
         }
         
+        // ========== FUNÇÃO CONFIRMAR AGENDAMENTO COM WHATSAPP PARA O CLIENTE ==========
         async function confirmAppointment(pendingId, appData) {
             const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(appData.dateKey).once("value");
             let alreadyConfirmed = false;
@@ -1444,12 +1427,62 @@
             await appointmentsRef.child(newConfirmedId).set(newApp);
             await deletePending(pendingId);
             
+            // ========== ENVIAR MENSAGEM PARA O CLIENTE (COMPATÍVEL COM TODOS OS NAVEGADORES) ==========
             const phoneNumber = appData.clientWhatsapp.replace(/\D/g, '');
-            const confirmationMessage = `*✅ AGENDAMENTO CONFIRMADO - Hg do Corte*%0A%0A🧔 Cliente: ${encodeURIComponent(appData.clientName)}%0A📅 Data: ${encodeURIComponent(appData.dateDisplay)}%0A⏰ Horário: ${encodeURIComponent(appData.hour)}%0A✂️ Serviço: ${encodeURIComponent(appData.serviceName)}%0A💰 Valor: R$ ${appData.servicePrice}%0A%0A📍 Endereço: Passagem Samaritana, Marambaia - Belém PA%0A🕒 Chegue no horário agendado, tolerância de 15-20 minutos.%0A%0A✨ Agradecemos a preferência! ✨`;
+            const clientPhone = phoneNumber;
             
-            const whatsappLink = `https://wa.me/55${phoneNumber}?text=${confirmationMessage}`;
-            window.open(whatsappLink, '_blank');
-            alert(`✅ Agendamento confirmado! Agora envie a mensagem de confirmação para o cliente ${appData.clientName} via WhatsApp.`);
+            const confirmationMessage = `*✅ AGENDAMENTO CONFIRMADO - Hg do Corte*%0A%0A` +
+                `🧔 *Cliente:* ${encodeURIComponent(appData.clientName)}%0A` +
+                `📅 *Data:* ${encodeURIComponent(appData.dateDisplay)}%0A` +
+                `⏰ *Horário:* ${encodeURIComponent(appData.hour)}%0A` +
+                `✂️ *Serviço:* ${encodeURIComponent(appData.serviceName)}%0A` +
+                `💰 *Valor:* R$ ${appData.servicePrice}%0A%0A` +
+                `📍 *Endereço:* Passagem Samaritana, Marambaia - Belém PA%0A` +
+                `⏱️ *Chegue no horário agendado (tolerância de 15-20 minutos).*%0A%0A` +
+                `✨ *Agradecemos a preferência!* ✨`;
+            
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isIOSChrome = /CriOS/.test(navigator.userAgent);
+            
+            let success = false;
+            
+            if (isIOS && !isIOSChrome) {
+                const whatsappUrl = `whatsapp://send?phone=${clientPhone}&text=${confirmationMessage}`;
+                window.location.href = whatsappUrl;
+                
+                setTimeout(() => {
+                    const webUrl = `https://wa.me/${clientPhone}?text=${confirmationMessage}`;
+                    window.open(webUrl, '_blank');
+                }, 1000);
+                success = true;
+            } else {
+                const whatsappUrl = `https://wa.me/${clientPhone}?text=${confirmationMessage}`;
+                const newWindow = window.open(whatsappUrl, '_blank');
+                
+                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                    const manualMessage = `Olá ${appData.clientName}, seu agendamento na Hg do Corte foi CONFIRMADO!\n\n📅 Data: ${appData.dateDisplay}\n⏰ Horário: ${appData.hour}\n✂️ Serviço: ${appData.serviceName} - R$ ${appData.servicePrice}\n📍 Endereço: Passagem Samaritana, Marambaia - Belém PA\n⏱️ Tolerância: 15-20 minutos.\n\nAgradecemos a preferência!`;
+                    
+                    const userConfirmed = confirm(
+                        "⚠️ O navegador bloqueou a abertura automática do WhatsApp.\n\n" +
+                        "Clique em OK para copiar a mensagem e enviar manualmente para o cliente.\n\n" +
+                        "Após copiar, cole no WhatsApp do cliente."
+                    );
+                    
+                    if (userConfirmed) {
+                        await navigator.clipboard.writeText(manualMessage);
+                        alert("✅ Mensagem copiada! Agora cole no WhatsApp do cliente e envie.");
+                    }
+                } else {
+                    success = true;
+                }
+            }
+            
+            if (success) {
+                console.log("WhatsApp aberto para enviar mensagem ao cliente.");
+            }
+            
+            alert(`✅ Agendamento confirmado!\n\n📱 Abrindo WhatsApp para enviar a mensagem de confirmação para ${appData.clientName}.`);
             
             await loadUnavailableSlots();
             return true;
@@ -1823,7 +1856,6 @@
         if (nextToNameFromService) nextToNameFromService.addEventListener('click', () => { if (selectedService) { showStep('name'); clientNameInput.value = ''; clientWhatsappInput.value = ''; nameErrorDiv.innerText = ''; } });
         backToPrevStepBtn.addEventListener('click', () => { if (flowHasServiceSelection && !preSelectedService) showStep('service'); else showStep('hour'); });
 
-        // Botão Confirmar modificado para funcionar no Safari
         confirmBtn.addEventListener('click', async () => {
             const nome = clientNameInput.value.trim();
             const whatsapp = clientWhatsappInput.value.trim();
@@ -1862,7 +1894,6 @@
                 return; 
             }
             
-            // Usar a nova função compatível com Safari
             sendClientConfirmationMessage(nome, selectedDate.display, selectedHour, selectedService.name, selectedService.price, whatsapp);
             
             alert("✅ Solicitação enviada! O agendamento só será confirmado após o envio do comprovante de pagamento via WhatsApp.");
@@ -1970,7 +2001,6 @@
         loadUnavailableSlots();
         updatePendingBadge();
         
-        // Verificar pendências a cada 30 segundos mesmo sem admin logado (para badge)
         setInterval(updatePendingBadge, 30000);
         
         // Carrossel
