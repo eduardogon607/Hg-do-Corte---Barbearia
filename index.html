@@ -1393,7 +1393,7 @@
             await appointmentsRef.child(id).remove(); 
         }
         
-        // ========== FUNÇÃO CONFIRMAR AGENDAMENTO COM WHATSAPP PARA O CLIENTE ==========
+        // ========== FUNÇÃO CONFIRMAR AGENDAMENTO - ABRE WHATSAPP DO CLIENTE ==========
         async function confirmAppointment(pendingId, appData) {
             const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(appData.dateKey).once("value");
             let alreadyConfirmed = false;
@@ -1427,10 +1427,22 @@
             await appointmentsRef.child(newConfirmedId).set(newApp);
             await deletePending(pendingId);
             
-            // ========== ENVIAR MENSAGEM PARA O CLIENTE (COMPATÍVEL COM TODOS OS NAVEGADORES) ==========
-            const phoneNumber = appData.clientWhatsapp.replace(/\D/g, '');
-            const clientPhone = phoneNumber;
+            // ========== ABRIR WHATSAPP DO CLIENTE PARA O BARBEIRO ENVIAR A CONFIRMAÇÃO ==========
+            // Limpa o número: remove tudo que não é dígito
+            let phoneNumber = appData.clientWhatsapp.replace(/\D/g, '');
             
+            // Garante que o número tenha 11 dígitos (DDD + 9 + 8 números)
+            if (phoneNumber.length === 10) {
+                // Se tiver 10 dígitos, adiciona o 9 na frente (formato antigo)
+                phoneNumber = phoneNumber.substring(0, 2) + '9' + phoneNumber.substring(2);
+            }
+            
+            // Adiciona o código do Brasil se não tiver
+            if (!phoneNumber.startsWith('55')) {
+                phoneNumber = '55' + phoneNumber;
+            }
+            
+            // Mensagem de confirmação (formatada para WhatsApp)
             const confirmationMessage = `*✅ AGENDAMENTO CONFIRMADO - Hg do Corte*%0A%0A` +
                 `🧔 *Cliente:* ${encodeURIComponent(appData.clientName)}%0A` +
                 `📅 *Data:* ${encodeURIComponent(appData.dateDisplay)}%0A` +
@@ -1441,50 +1453,42 @@
                 `⏱️ *Chegue no horário agendado (tolerância de 15-20 minutos).*%0A%0A` +
                 `✨ *Agradecemos a preferência!* ✨`;
             
+            // Detecta o navegador para compatibilidade
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             const isIOSChrome = /CriOS/.test(navigator.userAgent);
             
-            let success = false;
-            
+            // Abre o WhatsApp do cliente
             if (isIOS && !isIOSChrome) {
-                const whatsappUrl = `whatsapp://send?phone=${clientPhone}&text=${confirmationMessage}`;
+                // Safari no iPhone - abre o app diretamente
+                const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${confirmationMessage}`;
                 window.location.href = whatsappUrl;
                 
+                // Fallback: se não abrir, tenta a versão web
                 setTimeout(() => {
-                    const webUrl = `https://wa.me/${clientPhone}?text=${confirmationMessage}`;
+                    const webUrl = `https://wa.me/${phoneNumber}?text=${confirmationMessage}`;
                     window.open(webUrl, '_blank');
-                }, 1000);
-                success = true;
+                }, 800);
             } else {
-                const whatsappUrl = `https://wa.me/${clientPhone}?text=${confirmationMessage}`;
-                const newWindow = window.open(whatsappUrl, '_blank');
-                
-                if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-                    const manualMessage = `Olá ${appData.clientName}, seu agendamento na Hg do Corte foi CONFIRMADO!\n\n📅 Data: ${appData.dateDisplay}\n⏰ Horário: ${appData.hour}\n✂️ Serviço: ${appData.serviceName} - R$ ${appData.servicePrice}\n📍 Endereço: Passagem Samaritana, Marambaia - Belém PA\n⏱️ Tolerância: 15-20 minutos.\n\nAgradecemos a preferência!`;
-                    
-                    const userConfirmed = confirm(
-                        "⚠️ O navegador bloqueou a abertura automática do WhatsApp.\n\n" +
-                        "Clique em OK para copiar a mensagem e enviar manualmente para o cliente.\n\n" +
-                        "Após copiar, cole no WhatsApp do cliente."
-                    );
-                    
-                    if (userConfirmed) {
-                        await navigator.clipboard.writeText(manualMessage);
-                        alert("✅ Mensagem copiada! Agora cole no WhatsApp do cliente e envie.");
-                    }
-                } else {
-                    success = true;
-                }
+                // Android, Windows, Mac (Chrome/Edge/Firefox) - abre WhatsApp Web
+                const whatsappUrl = `https://wa.me/${phoneNumber}?text=${confirmationMessage}`;
+                window.open(whatsappUrl, '_blank');
             }
             
-            if (success) {
-                console.log("WhatsApp aberto para enviar mensagem ao cliente.");
-            }
-            
-            alert(`✅ Agendamento confirmado!\n\n📱 Abrindo WhatsApp para enviar a mensagem de confirmação para ${appData.clientName}.`);
+            // Mostra alerta para o barbeiro
+            alert(`✅ Agendamento confirmado!\n\n📱 Abrindo WhatsApp do cliente ${appData.clientName}.\n\n👉 APENAS CLIQUE EM "ENVIAR" para finalizar a confirmação.`);
             
             await loadUnavailableSlots();
+            
+            // Atualiza as listas
+            await renderPendingList();
+            await renderConfirmedList();
+            await updatePendingBadge();
+            
+            // Atualiza os horários se o modal estiver aberto
+            if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
+                await renderHoursWithBlocked(selectedDate);
+            }
+            
             return true;
         }
         
@@ -1572,7 +1576,6 @@
             }
             
             if (await confirmAppointment(id, appData)) {
-                alert("✅ Agendamento confirmado com sucesso!");
                 await renderPendingList();
                 await renderConfirmedList();
                 await updatePendingBadge();
