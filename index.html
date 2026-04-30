@@ -1393,7 +1393,70 @@
             await appointmentsRef.child(id).remove(); 
         }
         
-        // ========== FUNÇÃO CONFIRMAR AGENDAMENTO - ABRE WHATSAPP DO CLIENTE ==========
+        // ========== LIMPEZA AUTOMÁTICA DE AGENDAMENTOS CONFIRMADOS ANTIGOS ==========
+        async function limparAgendamentosAntigos() {
+            console.log("🔄 Verificando agendamentos antigos para remoção automática...");
+            
+            const snapshot = await appointmentsRef.once("value");
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            let removidos = 0;
+            const promises = [];
+            
+            snapshot.forEach(child => {
+                const app = child.val();
+                const id = child.key;
+                
+                if (app.dateKey) {
+                    const dataAgendamento = new Date(app.dateKey);
+                    dataAgendamento.setHours(0, 0, 0, 0);
+                    
+                    const dataLimite = new Date(dataAgendamento);
+                    dataLimite.setDate(dataLimite.getDate() + 1);
+                    
+                    if (hoje >= dataLimite) {
+                        console.log(`🗑️ Removendo agendamento automático: ${app.clientName} - ${app.dateDisplay}`);
+                        promises.push(appointmentsRef.child(id).remove());
+                        removidos++;
+                    }
+                }
+            });
+            
+            if (promises.length > 0) {
+                await Promise.all(promises);
+                console.log(`✅ ${removidos} agendamento(s) antigo(s) removido(s) automaticamente.`);
+                
+                if (adminListModal && adminListModal.classList.contains('active')) {
+                    await renderConfirmedList();
+                    await updatePendingBadge();
+                }
+            } else {
+                console.log("📭 Nenhum agendamento antigo para remover.");
+            }
+        }
+        
+        function iniciarLimpezaAutomatica() {
+            limparAgendamentosAntigos();
+            
+            const agora = new Date();
+            const proximaExecucao = new Date();
+            proximaExecucao.setHours(0, 1, 0, 0);
+            
+            if (agora >= proximaExecucao) {
+                proximaExecucao.setDate(proximaExecucao.getDate() + 1);
+            }
+            
+            const tempoAteProxima = proximaExecucao.getTime() - agora.getTime();
+            console.log(`⏰ Limpeza automática agendada para: ${proximaExecucao.toLocaleString()}`);
+            
+            setTimeout(() => {
+                limparAgendamentosAntigos();
+                setInterval(limparAgendamentosAntigos, 24 * 60 * 60 * 1000);
+            }, tempoAteProxima);
+        }
+        
+        // ========== FUNÇÃO CONFIRMAR AGENDAMENTO ==========
         async function confirmAppointment(pendingId, appData) {
             const snapshot = await appointmentsRef.orderByChild("dateKey").equalTo(appData.dateKey).once("value");
             let alreadyConfirmed = false;
@@ -1427,22 +1490,16 @@
             await appointmentsRef.child(newConfirmedId).set(newApp);
             await deletePending(pendingId);
             
-            // ========== ABRIR WHATSAPP DO CLIENTE PARA O BARBEIRO ENVIAR A CONFIRMAÇÃO ==========
-            // Limpa o número: remove tudo que não é dígito
             let phoneNumber = appData.clientWhatsapp.replace(/\D/g, '');
             
-            // Garante que o número tenha 11 dígitos (DDD + 9 + 8 números)
             if (phoneNumber.length === 10) {
-                // Se tiver 10 dígitos, adiciona o 9 na frente (formato antigo)
                 phoneNumber = phoneNumber.substring(0, 2) + '9' + phoneNumber.substring(2);
             }
             
-            // Adiciona o código do Brasil se não tiver
             if (!phoneNumber.startsWith('55')) {
                 phoneNumber = '55' + phoneNumber;
             }
             
-            // Mensagem de confirmação (formatada para WhatsApp)
             const confirmationMessage = `*✅ AGENDAMENTO CONFIRMADO - Hg do Corte*%0A%0A` +
                 `🧔 *Cliente:* ${encodeURIComponent(appData.clientName)}%0A` +
                 `📅 *Data:* ${encodeURIComponent(appData.dateDisplay)}%0A` +
@@ -1453,38 +1510,28 @@
                 `⏱️ *Chegue no horário agendado (tolerância de 15-20 minutos).*%0A%0A` +
                 `✨ *Agradecemos a preferência!* ✨`;
             
-            // Detecta o navegador para compatibilidade
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isIOSChrome = /CriOS/.test(navigator.userAgent);
             
-            // Abre o WhatsApp do cliente
             if (isIOS && !isIOSChrome) {
-                // Safari no iPhone - abre o app diretamente
                 const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${confirmationMessage}`;
                 window.location.href = whatsappUrl;
-                
-                // Fallback: se não abrir, tenta a versão web
                 setTimeout(() => {
                     const webUrl = `https://wa.me/${phoneNumber}?text=${confirmationMessage}`;
                     window.open(webUrl, '_blank');
                 }, 800);
             } else {
-                // Android, Windows, Mac (Chrome/Edge/Firefox) - abre WhatsApp Web
                 const whatsappUrl = `https://wa.me/${phoneNumber}?text=${confirmationMessage}`;
                 window.open(whatsappUrl, '_blank');
             }
             
-            // Mostra alerta para o barbeiro
             alert(`✅ Agendamento confirmado!\n\n📱 Abrindo WhatsApp do cliente ${appData.clientName}.\n\n👉 APENAS CLIQUE EM "ENVIAR" para finalizar a confirmação.`);
             
             await loadUnavailableSlots();
-            
-            // Atualiza as listas
             await renderPendingList();
             await renderConfirmedList();
             await updatePendingBadge();
             
-            // Atualiza os horários se o modal estiver aberto
             if (bookingModal && bookingModal.classList.contains('active') && stepHourDiv && stepHourDiv.style.display === 'block' && selectedDate) {
                 await renderHoursWithBlocked(selectedDate);
             }
@@ -1628,7 +1675,24 @@
             apps.sort((a, b) => (a.dateKey + a.hour).localeCompare(b.dateKey + b.hour));
             container.innerHTML = '';
             
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
             for (const app of apps) {
+                let warningHtml = '';
+                if (app.dateKey) {
+                    const dataAgendamento = new Date(app.dateKey);
+                    dataAgendamento.setHours(0, 0, 0, 0);
+                    const dataLimite = new Date(dataAgendamento);
+                    dataLimite.setDate(dataLimite.getDate() + 1);
+                    
+                    if (hoje >= dataLimite) {
+                        warningHtml = '<br><span style="color:#ff8888; font-size:0.7rem;">⚠️ Este agendamento será removido automaticamente em breve</span>';
+                    } else if (hoje.getTime() === dataLimite.getTime()) {
+                        warningHtml = '<br><span style="color:var(--yellow); font-size:0.7rem;">⏰ Último dia - será removido hoje à meia-noite</span>';
+                    }
+                }
+                
                 const div = document.createElement('div');
                 div.className = 'appointment-item';
                 div.innerHTML = `
@@ -1637,6 +1701,7 @@
                         📱 WhatsApp: ${escapeHtml(app.clientWhatsapp)}<br>
                         📅 ${app.dateDisplay} ⏰ ${app.hour}<br>
                         ✂️ ${app.serviceName} - R$ ${app.servicePrice}
+                        ${warningHtml}
                     </div>
                     <button class="delete-confirmed" data-id="${app.id}" style="background:#aa2e2e;color:white;border:none;padding:8px 18px;border-radius:40px;cursor:pointer;">🗑️ Excluir</button>
                 `;
@@ -2005,6 +2070,9 @@
         updatePendingBadge();
         
         setInterval(updatePendingBadge, 30000);
+        
+        // INICIAR LIMPEZA AUTOMÁTICA DOS AGENDAMENTOS CONFIRMADOS
+        iniciarLimpezaAutomatica();
         
         // Carrossel
         let currentCarouselPhotos = [], currentPhotoIndex = 0;
